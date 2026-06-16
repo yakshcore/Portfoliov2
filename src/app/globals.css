@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+/* ============================================================
+   THE ARCHITECT'S BLUEPRINT — design system
+   Classic blueprint: ink-navy ground, cyan linework, amber active
+   ============================================================ */
+
+:root {
+  /* ground */
+  --ink-900: #060a16;
+  --ink-800: #0a1020;
+  --ink-700: #0e1730;
+  --ink-600: #14213f;
+
+  /* blueprint linework */
+  --line: #8fb7d9;
+  --line-dim: #3a567a;
+  --line-faint: #1d3354;
+
+  /* type */
+  --paper: #dceaf6;
+  --paper-dim: #8aa6c0;
+
+  /* accents */
+  --cyan: #43c9ff;
+  --cyan-bright: #7fe0ff;
+  --amber: #ffb347;
+  --amber-bright: #ffcb6b;
+
+  --grid: rgba(67, 201, 255, 0.05);
+  --grid-strong: rgba(67, 201, 255, 0.09);
+
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-line: var(--line);
+  --color-line-dim: var(--line-dim);
+  --color-line-faint: var(--line-faint);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-cyan: var(--cyan);
+  --color-cyan-bright: var(--cyan-bright);
+  --color-amber: var(--amber);
+  --color-amber-bright: var(--amber-bright);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smoothing */
+}
+
+body {
+  background-color: var(--ink-900);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* drafting grid backdrop */
+.blueprint-grid {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
+/* radial vignette so grid fades at edges */
+.grid-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    var(--ink-900) 95%
+  );
+}
+
+::selection {
+  background: var(--cyan);
+  color: var(--ink-900);
+}
+
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-faint);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line-dim);
+}
+
+/* technical label */
+.tech-label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.68rem;
+  color: var(--paper-dim);
+}
+
+/* glow text */
+.glow-cyan {
+  text-shadow: 0 0 12px rgba(67, 201, 255, 0.55);
+}
+.glow-amber {
+  text-shadow: 0 0 12px rgba(255, 179, 71, 0.5);
+}
+
+/* draw-on stroke helper (set via inline style) */
+.draw-path {
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+}
+
+/* data packets flow along diagram edges, only once system is online */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+.diagram path.flow {
+  stroke-dashoffset: 0;
+}
+.diagram.online path.flow {
+  animation: flow 2.2s linear infinite;
+}
+
+/* node status dot pulse, only when online */
+@keyframes nodepulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
+}
+.diagram.online .node-dot {
+  animation: nodepulse 2s ease-in-out infinite;
+}
+
+/* blinking cursor */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
