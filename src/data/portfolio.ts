@@ -329,15 +329,53 @@ export const stackStory: {
     {
       code: "L7",
       role: "FRONTIER",
-      title: "The Decentralized Edge",
+      title: "Frontier Systems",
       narrative:
-        "The layer I'm pushing into right now — trustless, on-chain systems. Smart contracts, EVM, and Web3 rails. Currently going deep.",
-      items: ["Solidity", "Smart Contracts", "EVM", "ethers.js", "Web3"],
+        "The emerging layer I'm researching now — decentralized infrastructure, autonomous agents, and trustless on-chain rails. New primitives, and the tooling that builds them.",
+      items: ["Decentralized Infra", "Autonomous Agents", "Smart Contracts", "EVM", "Web3"],
       accent: "amber",
       status: "EXPLORING",
     },
   ],
 };
+
+// ------------------------------------------------------------
+// OPERATING PHILOSOPHY — the mantra. Surfaced as the opening beat
+// of the FIELD OPERATIONS section. Resume → philosophy.
+// ------------------------------------------------------------
+export const manifesto = [
+  "Every system begins as a blueprint.",
+  "Every blueprint becomes infrastructure.",
+  "Every infrastructure becomes a living network.",
+];
+
+// ------------------------------------------------------------
+// FIELD OPERATIONS — what the operator is running *right now*.
+// Live status, not work history — reinforces "actively building".
+// ------------------------------------------------------------
+export type Operation = {
+  name: string;
+  detail: string;
+  status: "ACTIVE" | "RESEARCH" | "EXPERIMENTING";
+};
+
+export const operations: Operation[] = [
+  {
+    name: "Portfolio v2",
+    detail: "This system — WebGL globe, live telemetry, scroll-story.",
+    status: "ACTIVE",
+  },
+  {
+    name: "Decentralized Infrastructure",
+    detail: "Smart contracts, EVM, and Web3 rails — going deep.",
+    status: "RESEARCH",
+  },
+  {
+    name: "AI Agent Systems",
+    detail: "Autonomous, tool-using agents and automation pipelines.",
+    status: "EXPERIMENTING",
+  },
+];
 
 export const achievements: { title: string; org: string; date: string }[] = [
   { title: "1st Runner-Up — Prompt Wars", org: "H2S Google India", date: "May 2026" },

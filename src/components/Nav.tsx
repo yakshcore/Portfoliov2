@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { sound } from "@/lib/sound";
 
 const ITEMS = [
+  { id: "operations", label: "OPS" },
   { id: "principles", label: "PRINCIPLES" },
   { id: "systems", label: "SYSTEMS" },
   { id: "signals", label: "SIGNALS" },

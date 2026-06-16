@@ -6,6 +6,7 @@ import BootSequence from "@/components/BootSequence";
 import HudFrame from "@/components/HudFrame";
 import Nav from "@/components/Nav";
 import Hero from "@/components/sections/Hero";
+import Operations from "@/components/sections/Operations";
 import Approach from "@/components/sections/Approach";
 import Projects from "@/components/sections/Projects";
 import OpenSource from "@/components/sections/OpenSource";
@@ -27,6 +28,7 @@ export default function Home() {
 
       <main className="relative">
         <Hero started={booted} />
+        <Operations />
         <Approach />
         <Projects />
         <OpenSource />
