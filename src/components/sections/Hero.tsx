@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { identity, systemStats } from "@/data/portfolio";
@@ -9,9 +9,13 @@ import Typewriter from "@/components/Typewriter";
 const WireframeScene = dynamic(() => import("@/components/three/WireframeScene"), {
   ssr: false,
 });
+const StackStory = dynamic(() => import("@/components/StackStory"), {
+  ssr: false,
+});
 
 export default function Hero({ started }: { started: boolean }) {
   const root = useRef<HTMLDivElement>(null);
+  const [storyOpen, setStoryOpen] = useState(false);
 
   useEffect(() => {
     if (!started) return;
@@ -58,9 +62,9 @@ export default function Hero({ started }: { started: boolean }) {
               />
             </p>
             <p className="mt-3 text-sm leading-relaxed text-paper-dim">
-              {identity.tagline} Two years architecting MERN, AI/LLM, and
-              cloud-native systems — from visa CRMs to AI food-tech, shipped
-              solo.
+              {identity.tagline} Two years architecting MERN and cloud-native
+              systems with deep AI/LLM integration — from visa CRMs to AI
+              food-tech.
             </p>
           </div>
 
@@ -81,8 +85,8 @@ export default function Hero({ started }: { started: boolean }) {
         </div>
 
         {/* ---- RIGHT: globe column ---- */}
-        <div className="hero-globe relative h-[42vh] min-h-[320px] w-full lg:h-[78vh]">
-          <WireframeScene />
+        <div className="hero-globe group relative h-[42vh] min-h-[320px] w-full lg:h-[78vh]">
+          <WireframeScene onOpen={() => setStoryOpen(true)} />
           <div className="pointer-events-none absolute inset-0 grid-vignette" />
           {/* globe annotations */}
           <div className="pointer-events-none absolute left-3 top-3 tech-label text-cyan/70">
@@ -91,8 +95,18 @@ export default function Hero({ started }: { started: boolean }) {
           <div className="pointer-events-none absolute bottom-3 right-3 tech-label text-paper-dim">
             54 NODES · STREAMING
           </div>
+          {/* tap-to-enter affordance */}
+          <div className="pointer-events-none absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 border border-cyan/30 bg-ink-900/70 px-3 py-1 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 sm:opacity-70">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan shadow-[0_0_8px_var(--cyan)]" />
+            <span className="tech-label text-[0.55rem] text-cyan">
+              TAP TO OPEN THE STACK
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* fullscreen scroll-story launched from the globe */}
+      <StackStory open={storyOpen} onClose={() => setStoryOpen(false)} />
 
       {/* scroll cue */}
       <div className="hero-anim absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">

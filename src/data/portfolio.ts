@@ -17,7 +17,7 @@ export const identity = {
   location: "Ahmedabad, GJ, India",
   email: "yaksh.core@gmail.com",
   phone: "+91 97257 83139",
-  tagline: "I architect and ship production systems — solo.",
+  tagline: "I architect and ship production systems end-to-end.",
   summary:
     "Full-Stack Developer with 2 years of experience specialising in MERN-stack applications, AI/LLM integrations, and cloud-native deployments on AWS & GCP. Proven track record of independently architecting and shipping production systems — from visa CRM platforms to AI-powered food-tech products — with hands-on ownership across system design, microservices, CI/CD pipelines, and performance optimisation.",
   links: {
@@ -239,7 +239,105 @@ export const skillGroups: { group: string; items: string[] }[] = [
   { group: "AI & Automation", items: ["Gemini API", "Claude API", "OpenAI API", "n8n"] },
   { group: "Data & Caching", items: ["MongoDB", "Redis", "Supabase", "Firebase", "Neo4j"] },
   { group: "Integrations", items: ["Twilio", "Nodemailer", "Cloudinary", "Agora", "Capacitor"] },
+  { group: "Blockchain", items: ["Solidity", "Smart Contracts", "EVM", "ethers.js", "Web3"] },
 ];
+
+// ------------------------------------------------------------
+// THE STACK — scroll-story descended from the hero globe.
+// Tap the globe → it opens fullscreen and walks these layers,
+// each one lighting up its own constellation of nodes.
+// Ordered foundation → frontier (core language up to blockchain).
+// ------------------------------------------------------------
+export type StackLayer = {
+  code: string;
+  role: string;
+  title: string;
+  narrative: string;
+  items: string[];
+  accent: "cyan" | "amber";
+  status?: "LIVE" | "EXPLORING";
+};
+
+export const stackStory: {
+  title: string;
+  line: string;
+  layers: StackLayer[];
+} = {
+  title: "THE STACK",
+  line: "Seven layers, one operator. Descend the system I build with — from raw language at the core to the decentralized frontier I'm pushing into now.",
+  layers: [
+    {
+      code: "L1",
+      role: "FOUNDATION",
+      title: "Language Core",
+      narrative:
+        "Every system I ship starts here — typed, strict, predictable. The bedrock the whole stack stands on.",
+      items: ["TypeScript", "JavaScript (ES6+)"],
+      accent: "cyan",
+      status: "LIVE",
+    },
+    {
+      code: "L2",
+      role: "INTERFACE",
+      title: "What People Touch",
+      narrative:
+        "The surface layer — fast, server-rendered, and built to feel alive. Where engineering meets the eye.",
+      items: ["React.js", "Next.js (SSR/ISR)", "Three.js / R3F", "GSAP", "Tailwind"],
+      accent: "cyan",
+      status: "LIVE",
+    },
+    {
+      code: "L3",
+      role: "SERVICES",
+      title: "The Logic Layer",
+      narrative:
+        "Where the rules live — APIs, sockets, and microservices wired for real-time and locked down with RBAC.",
+      items: ["Node.js", "Express.js", "REST", "WebSockets", "Microservices", "OAuth", "RBAC"],
+      accent: "cyan",
+      status: "LIVE",
+    },
+    {
+      code: "L4",
+      role: "PERSISTENCE",
+      title: "State That Survives",
+      narrative:
+        "Memory for the system — documents, caches, and graphs that hold the truth between requests.",
+      items: ["MongoDB", "Redis", "Supabase", "Firebase", "Neo4j"],
+      accent: "cyan",
+      status: "LIVE",
+    },
+    {
+      code: "L5",
+      role: "INFRASTRUCTURE",
+      title: "Where It Runs",
+      narrative:
+        "Containers, pipelines, and cloud — shipped end-to-end so deploys are boring and uptime isn't.",
+      items: ["AWS (EC2/S3/IAM)", "Google Cloud", "Docker", "CI/CD", "Nginx"],
+      accent: "cyan",
+      status: "LIVE",
+    },
+    {
+      code: "L6",
+      role: "INTELLIGENCE",
+      title: "Systems That Reason",
+      narrative:
+        "LLMs and automation wired into the product — recommendation engines, agents, and pipelines that think.",
+      items: ["Gemini API", "Claude API", "OpenAI API", "n8n"],
+      accent: "amber",
+      status: "LIVE",
+    },
+    {
+      code: "L7",
+      role: "FRONTIER",
+      title: "The Decentralized Edge",
+      narrative:
+        "The layer I'm pushing into right now — trustless, on-chain systems. Smart contracts, EVM, and Web3 rails. Currently going deep.",
+      items: ["Solidity", "Smart Contracts", "EVM", "ethers.js", "Web3"],
+      accent: "amber",
+      status: "EXPLORING",
+    },
+  ],
+};
 
 export const achievements: { title: string; org: string; date: string }[] = [
   { title: "1st Runner-Up — Prompt Wars", org: "H2S Google India", date: "May 2026" },

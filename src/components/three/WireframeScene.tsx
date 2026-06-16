@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useMemo, useRef, Suspense } from "react";
 import * as THREE from "three";
+import { sound } from "@/lib/sound";
 
 // shared drag/spin control state
 type Controls = {
@@ -279,7 +280,7 @@ function FitCamera({ radius }: { radius: number }) {
   return null;
 }
 
-export default function WireframeScene() {
+export default function WireframeScene({ onOpen }: { onOpen?: () => void }) {
   const controls = useRef<Controls>({
     dragging: false,
     vy: IDLE_SPEED,
@@ -289,6 +290,8 @@ export default function WireframeScene() {
     lastX: 0,
     lastY: 0,
   });
+  // tap-vs-drag tracking so a click opens the story but a swipe just spins
+  const tap = useRef({ x: 0, y: 0, t: 0, moved: false });
 
   const onDown = (e: React.PointerEvent) => {
     const c = controls.current;
@@ -297,6 +300,7 @@ export default function WireframeScene() {
     c.vx = 0;
     c.lastX = e.clientX;
     c.lastY = e.clientY;
+    tap.current = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
   const onMove = (e: React.PointerEvent) => {
@@ -306,18 +310,32 @@ export default function WireframeScene() {
     c.accumDY += e.clientY - c.lastY;
     c.lastX = e.clientX;
     c.lastY = e.clientY;
+    const t = tap.current;
+    if (Math.hypot(e.clientX - t.x, e.clientY - t.y) > 6) t.moved = true;
   };
   const onUp = () => {
+    controls.current.dragging = false;
+    const t = tap.current;
+    if (!t.moved && performance.now() - t.t < 350) {
+      sound.play("blip");
+      onOpen?.();
+    }
+  };
+  const endDrag = () => {
     controls.current.dragging = false;
   };
 
   return (
     <div
-      className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
+      className="absolute inset-0 cursor-pointer touch-none"
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
-      onPointerLeave={onUp}
+      onPointerLeave={endDrag}
+      onDoubleClick={() => {
+        sound.play("blip");
+        onOpen?.();
+      }}
     >
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }}
