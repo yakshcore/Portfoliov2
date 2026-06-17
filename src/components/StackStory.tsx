@@ -16,15 +16,19 @@ const clampIdx = (i: number) => Math.max(0, Math.min(layers.length - 1, i));
 export default function StackStory({
   open,
   onClose,
+  onProgress,
 }: {
   open: boolean;
   onClose: () => void;
+  onProgress?: (layer: number) => void;
 }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   activeRef.current = active;
+  // furthest layer the visitor descends to — persisted onto the hero globe
+  const maxReached = useRef(0);
 
   // globe drag-rotate state + hovered-tag node
   const controlsRef = useRef<GlobeControls>({
@@ -92,6 +96,7 @@ export default function StackStory({
     if (!open) return;
     setActive(0);
     activeRef.current = 0;
+    maxReached.current = 0;
     if (scroller.current) scroller.current.scrollTop = 0;
 
     const raf = requestAnimationFrame(() => setMounted(true));
@@ -126,6 +131,10 @@ export default function StackStory({
     if (i !== activeRef.current) {
       setActive(i);
       sound.play("blip");
+      if (i > maxReached.current) {
+        maxReached.current = i;
+        onProgress?.(i);
+      }
     }
   };
 
@@ -133,8 +142,8 @@ export default function StackStory({
 
   return (
     <div
-      className={`fixed inset-0 z-[60] bg-ink-900/95 backdrop-blur-sm transition-all duration-500 ${
-        mounted ? "opacity-100 scale-100" : "opacity-0 scale-105"
+      className={`fixed inset-0 z-[60] origin-center bg-ink-900/95 backdrop-blur-sm transition-all duration-500 ease-out ${
+        mounted ? "opacity-100 scale-100" : "opacity-0 scale-95"
       }`}
       role="dialog"
       aria-modal="true"

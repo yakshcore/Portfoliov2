@@ -64,7 +64,7 @@ export const projects: Project[] = [
   {
     id: "pravasa",
     index: "SYS-01",
-    name: "Pravasa Transworld",
+    name: "Pravasa Transworld - Visa Service Platform",
     client: "Obscur Labs",
     year: "2026",
     classification: "VISA CRM PLATFORM",
@@ -84,12 +84,54 @@ export const projects: Project[] = [
     ],
     diagram: {
       nodes: [
-        { id: "client", label: "Client", sub: "Next.js", x: 8, y: 22, kind: "client" },
-        { id: "otp", label: "OTP Auth", sub: "passwordless", x: 8, y: 70, kind: "edge" },
-        { id: "api", label: "API Layer", sub: "Node / Express", x: 40, y: 46, kind: "service" },
-        { id: "pipeline", label: "Status Pipeline", sub: "real-time", x: 72, y: 22, kind: "service" },
-        { id: "db", label: "MongoDB", sub: "case store", x: 92, y: 50, kind: "data" },
-        { id: "docs", label: "Cloudinary", sub: "documents", x: 72, y: 74, kind: "external" },
+        {
+          id: "client",
+          label: "Client",
+          sub: "Next.js",
+          x: 8,
+          y: 22,
+          kind: "client",
+        },
+        {
+          id: "otp",
+          label: "OTP Auth",
+          sub: "passwordless",
+          x: 8,
+          y: 70,
+          kind: "edge",
+        },
+        {
+          id: "api",
+          label: "API Layer",
+          sub: "Node / Express",
+          x: 40,
+          y: 46,
+          kind: "service",
+        },
+        {
+          id: "pipeline",
+          label: "Status Pipeline",
+          sub: "real-time",
+          x: 72,
+          y: 22,
+          kind: "service",
+        },
+        {
+          id: "db",
+          label: "MongoDB",
+          sub: "case store",
+          x: 92,
+          y: 50,
+          kind: "data",
+        },
+        {
+          id: "docs",
+          label: "Cloudinary",
+          sub: "documents",
+          x: 72,
+          y: 74,
+          kind: "external",
+        },
       ],
       edges: [
         { from: "client", to: "api", label: "HTTPS" },
@@ -104,13 +146,22 @@ export const projects: Project[] = [
   {
     id: "mealai",
     index: "SYS-02",
-    name: "AI Meal-Planning Platform",
+    name: "Bonvivant - A Meal-Planning Platform",
     client: "Techsture Technologies",
     year: "2025",
     classification: "AI FOOD-TECH ENGINE",
     summary:
       "Led end-to-end development of an AI-powered meal-planning & restaurant platform — 30+ restaurants, 435+ menu items, real-time order tracking. SSR/ISR improved load performance ~40%; Gemini & Claude drive 3+ recommendation flows.",
-    stack: ["Next.js", "React", "Node.js", "MongoDB", "Gemini API", "Claude API", "AWS", "Docker"],
+    stack: [
+      "Next.js",
+      "React",
+      "Node.js",
+      "MongoDB",
+      "Gemini API",
+      "Claude API",
+      "AWS",
+      "Docker",
+    ],
     metrics: [
       { value: "~40%", label: "load perf ↑" },
       { value: "435+", label: "menu items" },
@@ -125,13 +176,62 @@ export const projects: Project[] = [
     ],
     diagram: {
       nodes: [
-        { id: "client", label: "Next.js", sub: "SSR / ISR", x: 8, y: 24, kind: "client" },
-        { id: "android", label: "Android", sub: "Capacitor", x: 8, y: 72, kind: "client" },
-        { id: "nginx", label: "Nginx", sub: "reverse proxy", x: 34, y: 48, kind: "edge" },
-        { id: "api", label: "Services", sub: "Node · RBAC", x: 58, y: 26, kind: "service" },
-        { id: "ai", label: "AI Engine", sub: "Gemini · Claude", x: 58, y: 72, kind: "ai" },
-        { id: "db", label: "MongoDB", sub: "data store", x: 86, y: 28, kind: "data" },
-        { id: "s3", label: "AWS S3", sub: "assets", x: 86, y: 72, kind: "external" },
+        {
+          id: "client",
+          label: "Next.js",
+          sub: "SSR / ISR",
+          x: 8,
+          y: 24,
+          kind: "client",
+        },
+        {
+          id: "android",
+          label: "Android",
+          sub: "Capacitor",
+          x: 8,
+          y: 72,
+          kind: "client",
+        },
+        {
+          id: "nginx",
+          label: "Nginx",
+          sub: "reverse proxy",
+          x: 34,
+          y: 48,
+          kind: "edge",
+        },
+        {
+          id: "api",
+          label: "Services",
+          sub: "Node · RBAC",
+          x: 58,
+          y: 26,
+          kind: "service",
+        },
+        {
+          id: "ai",
+          label: "AI Engine",
+          sub: "Gemini · Claude",
+          x: 58,
+          y: 72,
+          kind: "ai",
+        },
+        {
+          id: "db",
+          label: "MongoDB",
+          sub: "data store",
+          x: 86,
+          y: 28,
+          kind: "data",
+        },
+        {
+          id: "s3",
+          label: "AWS S3",
+          sub: "assets",
+          x: 86,
+          y: 72,
+          kind: "external",
+        },
       ],
       edges: [
         { from: "client", to: "nginx" },
@@ -147,13 +247,20 @@ export const projects: Project[] = [
   {
     id: "gamersera",
     index: "SYS-03",
-    name: "Gamers Era",
+    name: "Gamers Era - Social Gaming Platform",
     client: "University Project",
     year: "2025",
     classification: "SOCIAL GAMING NETWORK",
     summary:
       "A scalable social gaming platform — discover games, build collections, follow gamers, and open real-time encrypted chats. 200+ registered users, 1,000+ collections. Web + Android via Capacitor, deployed on Google Cloud.",
-    stack: ["Next.js", "TypeScript", "Node.js", "Firebase", "RAWG API", "WebSockets"],
+    stack: [
+      "Next.js",
+      "TypeScript",
+      "Node.js",
+      "Firebase",
+      "RAWG API",
+      "WebSockets",
+    ],
     metrics: [
       { value: "200+", label: "users" },
       { value: "1,000+", label: "collections" },
@@ -167,12 +274,54 @@ export const projects: Project[] = [
     ],
     diagram: {
       nodes: [
-        { id: "web", label: "Web App", sub: "Next.js · TS", x: 8, y: 26, kind: "client" },
-        { id: "mobile", label: "Android", sub: "Capacitor", x: 8, y: 72, kind: "client" },
-        { id: "api", label: "Node API", sub: "social graph", x: 40, y: 48, kind: "service" },
-        { id: "ws", label: "WebSocket", sub: "E2E chat", x: 70, y: 24, kind: "service" },
-        { id: "fb", label: "Firebase", sub: "realtime db", x: 92, y: 50, kind: "data" },
-        { id: "rawg", label: "RAWG API", sub: "game data", x: 70, y: 74, kind: "external" },
+        {
+          id: "web",
+          label: "Web App",
+          sub: "Next.js · TS",
+          x: 8,
+          y: 26,
+          kind: "client",
+        },
+        {
+          id: "mobile",
+          label: "Android",
+          sub: "Capacitor",
+          x: 8,
+          y: 72,
+          kind: "client",
+        },
+        {
+          id: "api",
+          label: "Node API",
+          sub: "social graph",
+          x: 40,
+          y: 48,
+          kind: "service",
+        },
+        {
+          id: "ws",
+          label: "WebSocket",
+          sub: "E2E chat",
+          x: 70,
+          y: 24,
+          kind: "service",
+        },
+        {
+          id: "fb",
+          label: "Firebase",
+          sub: "realtime db",
+          x: 92,
+          y: 50,
+          kind: "data",
+        },
+        {
+          id: "rawg",
+          label: "RAWG API",
+          sub: "game data",
+          x: 70,
+          y: 74,
+          kind: "external",
+        },
       ],
       edges: [
         { from: "web", to: "api" },
@@ -233,13 +382,42 @@ export const experience: ExperienceEntry[] = [
 // ------------------------------------------------------------
 export const skillGroups: { group: string; items: string[] }[] = [
   { group: "Languages", items: ["JavaScript (ES6+)", "TypeScript"] },
-  { group: "Frontend", items: ["React.js", "Next.js (SSR/ISR)", "HTML5", "CSS3"] },
-  { group: "Backend & APIs", items: ["Node.js", "Express.js", "REST", "WebSockets", "Microservices", "OAuth", "RBAC"] },
-  { group: "Cloud & DevOps", items: ["AWS (EC2/S3/IAM)", "Google Cloud", "Docker", "CI/CD", "Nginx"] },
-  { group: "AI & Automation", items: ["Gemini API", "Claude API", "OpenAI API", "n8n"] },
-  { group: "Data & Caching", items: ["MongoDB", "Redis", "Supabase", "Firebase", "Neo4j"] },
-  { group: "Integrations", items: ["Twilio", "Nodemailer", "Cloudinary", "Agora", "Capacitor"] },
-  { group: "Blockchain", items: ["Solidity", "Smart Contracts", "EVM", "ethers.js", "Web3"] },
+  {
+    group: "Frontend",
+    items: ["React.js", "Next.js (SSR/ISR)", "HTML5", "CSS3"],
+  },
+  {
+    group: "Backend & APIs",
+    items: [
+      "Node.js",
+      "Express.js",
+      "REST",
+      "WebSockets",
+      "Microservices",
+      "OAuth",
+      "RBAC",
+    ],
+  },
+  {
+    group: "Cloud & DevOps",
+    items: ["AWS (EC2/S3/IAM)", "Google Cloud", "Docker", "CI/CD", "Nginx"],
+  },
+  {
+    group: "AI & Automation",
+    items: ["Gemini API", "Claude API", "OpenAI API", "n8n"],
+  },
+  {
+    group: "Data & Caching",
+    items: ["MongoDB", "Redis", "Supabase", "Firebase", "Neo4j"],
+  },
+  {
+    group: "Integrations",
+    items: ["Twilio", "Nodemailer", "Cloudinary", "Agora", "Capacitor"],
+  },
+  {
+    group: "Blockchain",
+    items: ["Solidity", "Smart Contracts", "EVM", "ethers.js", "Web3"],
+  },
 ];
 
 // ------------------------------------------------------------
@@ -282,7 +460,13 @@ export const stackStory: {
       title: "What People Touch",
       narrative:
         "The surface layer — fast, server-rendered, and built to feel alive. Where engineering meets the eye.",
-      items: ["React.js", "Next.js (SSR/ISR)", "Three.js / R3F", "GSAP", "Tailwind"],
+      items: [
+        "React.js",
+        "Next.js (SSR/ISR)",
+        "Three.js / R3F",
+        "GSAP",
+        "Tailwind",
+      ],
       accent: "cyan",
       status: "LIVE",
     },
@@ -292,7 +476,15 @@ export const stackStory: {
       title: "The Logic Layer",
       narrative:
         "Where the rules live — APIs, sockets, and microservices wired for real-time and locked down with RBAC.",
-      items: ["Node.js", "Express.js", "REST", "WebSockets", "Microservices", "OAuth", "RBAC"],
+      items: [
+        "Node.js",
+        "Express.js",
+        "REST",
+        "WebSockets",
+        "Microservices",
+        "OAuth",
+        "RBAC",
+      ],
       accent: "cyan",
       status: "LIVE",
     },
@@ -332,7 +524,13 @@ export const stackStory: {
       title: "Frontier Systems",
       narrative:
         "The emerging layer I'm researching now — decentralized infrastructure, autonomous agents, and trustless on-chain rails. New primitives, and the tooling that builds them.",
-      items: ["Decentralized Infra", "Autonomous Agents", "Smart Contracts", "EVM", "Web3"],
+      items: [
+        "Decentralized Infra",
+        "Autonomous Agents",
+        "Smart Contracts",
+        "EVM",
+        "Web3",
+      ],
       accent: "amber",
       status: "EXPLORING",
     },
@@ -378,8 +576,16 @@ export const operations: Operation[] = [
 ];
 
 export const achievements: { title: string; org: string; date: string }[] = [
-  { title: "1st Runner-Up — Prompt Wars", org: "H2S Google India", date: "May 2026" },
-  { title: "GDG on Campus Solution Challenge", org: "Google India", date: "Aug 2025" },
+  {
+    title: "1st Runner-Up — Prompt Wars",
+    org: "H2S Google India",
+    date: "May 2026",
+  },
+  {
+    title: "GDG on Campus Solution Challenge",
+    org: "Google India",
+    date: "Aug 2025",
+  },
   { title: "Neo4j Certified Professional", org: "Neo4j", date: "Jul 2025" },
 ];
 
