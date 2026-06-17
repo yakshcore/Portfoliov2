@@ -4,7 +4,8 @@ import { useState } from "react";
 import SmoothScroll from "@/components/SmoothScroll";
 import BootSequence from "@/components/BootSequence";
 import HudFrame from "@/components/HudFrame";
-import Nav from "@/components/Nav";
+import DepthNav from "@/components/DepthNav";
+import ScrollSnap from "@/components/ScrollSnap";
 import Hero from "@/components/sections/Hero";
 import Operations from "@/components/sections/Operations";
 import Approach from "@/components/sections/Approach";
@@ -24,7 +25,8 @@ export default function Home() {
 
       <BootSequence onDone={() => setBooted(true)} />
       <HudFrame />
-      <Nav />
+      <DepthNav />
+      <ScrollSnap />
 
       <main className="relative">
         <Hero started={booted} />

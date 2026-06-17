@@ -17,20 +17,12 @@ function Corner({ className }: { className: string }) {
 }
 
 export default function HudFrame() {
-  const [progress, setProgress] = useState(0);
   const [clock, setClock] = useState("--:--:--");
   const [fps, setFps] = useState(60);
   const [signal, setSignal] = useState(5);
   const [load, setLoad] = useState(34);
 
   useEffect(() => {
-    const onScroll = () => {
-      const h = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(h > 0 ? window.scrollY / h : 0);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
     // live clock — updates every second
     const tick = () => {
       const d = new Date();
@@ -50,7 +42,6 @@ export default function HudFrame() {
     }, 2200);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
       clearInterval(clockId);
       clearInterval(teleId);
     };
@@ -129,24 +120,6 @@ export default function HudFrame() {
       {/* bottom-right: sound toggle */}
       <div className="absolute bottom-6 right-9">
         <SoundToggle />
-      </div>
-
-      {/* right-edge scroll progress */}
-      <div className="absolute right-6 top-1/2 flex -translate-y-1/2 flex-col items-center gap-2">
-        <span className="tech-label [writing-mode:vertical-rl]">DEPTH</span>
-        <div className="relative h-40 w-px bg-line-faint">
-          <div
-            className="absolute left-0 top-0 w-px bg-cyan"
-            style={{ height: `${progress * 100}%` }}
-          />
-          <div
-            className="absolute -left-[3px] h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_8px_var(--cyan)]"
-            style={{ top: `calc(${progress * 100}% - 3px)` }}
-          />
-        </div>
-        <span className="tech-label tabular-nums text-cyan">
-          {String(Math.round(progress * 100)).padStart(3, "0")}
-        </span>
       </div>
     </div>
   );

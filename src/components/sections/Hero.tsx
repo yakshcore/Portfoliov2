@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { identity, systemStats, stackStory } from "@/data/portfolio";
+import { sound } from "@/lib/sound";
 import Typewriter from "@/components/Typewriter";
 
 const HeroStackGlobe = dynamic(
@@ -50,6 +51,16 @@ export default function Hero({ started }: { started: boolean }) {
   };
 
   const complete = reached >= STACK_MAX;
+
+  // wipe progress so the globe returns to its incomplete state — ready to rebuild
+  const handleReset = () => {
+    sound.play("blip");
+    reachedRef.current = 0;
+    setReached(0);
+    try {
+      localStorage.setItem("yb-stack-reached", "0");
+    } catch {}
+  };
 
   useEffect(() => {
     if (!started) return;
@@ -179,6 +190,18 @@ export default function Hero({ started }: { started: boolean }) {
                   : "DOUBLE-TAP TO COMPLETE THE GLOBE"}
               </span>
             </div>
+
+            {/* reset — appears once the globe is fully mapped */}
+            {complete && (
+              <button
+                onClick={handleReset}
+                onMouseEnter={() => sound.play("hover")}
+                aria-label="Reset stack progress"
+                className="pointer-events-auto absolute bottom-4 right-3 z-10 flex items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-amber hover:text-amber"
+              >
+                <span className="text-sm leading-none">↺</span> RESET
+              </button>
+            )}
           </div>
         </div>
       </div>
