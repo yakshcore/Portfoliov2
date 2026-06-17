@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { identity } from "@/data/portfolio";
 import SectionHeader from "@/components/SectionHeader";
 import CatField, { type CatMood } from "@/components/CatField";
+import { sendCat } from "@/lib/catSignals";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,6 +28,17 @@ const CHANNELS = [
     href: `tel:${identity.phone.replace(/\s/g, "")}`,
   },
 ];
+
+// the cat's mood as a tongue-in-cheek system diagnostic
+const STATUS: Record<CatMood, string> = {
+  SLEEPING: "LOW POWER MODE",
+  DIZZY: "TRACKING OVERLOAD",
+  STARTLED: "SIGNAL SPIKE",
+  PLAYING: "TARGET ACQUIRED",
+  PURRING: "CPU: PURRING",
+  WATCHING: "TRACKING CURSOR",
+  DOZING: "STATUS: NOMINAL",
+};
 
 export default function Contact() {
   const ref = useRef<HTMLDivElement>(null);
@@ -55,7 +67,10 @@ export default function Contact() {
       ScrollTrigger.create({
         trigger: el,
         start: "top 70%",
-        onEnter: () => setArmed(true),
+        onEnter: () => {
+          setArmed(true);
+          sendCat({ type: "perk", label: "channel online" });
+        },
       });
     }, el);
     return () => ctx.revert();
@@ -121,6 +136,16 @@ export default function Contact() {
                 href={c.href}
                 target={c.href.startsWith("http") ? "_blank" : undefined}
                 rel="noreferrer"
+                onMouseEnter={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  sendCat({
+                    type: "glance",
+                    x: r.left + r.width / 2,
+                    y: r.top + r.height / 2,
+                  });
+                  if (c.label === "GITHUB")
+                    sendCat({ type: "perk", label: "monitoring repositories" });
+                }}
                 className="group bg-ink-900 p-5 transition-colors hover:bg-ink-800"
               >
                 <div className="tech-label flex items-center justify-between">
@@ -139,12 +164,12 @@ export default function Contact() {
           {/* resident kitten - watches the cursor, purrs when pet, chases a toy */}
           <div className="contact-reveal relative min-h-[240px] flex-1 overflow-hidden rounded border border-line-faint bg-ink-900/40">
             <CatField onMood={setMood} onThought={showThought} />
-            <div className="pointer-events-none absolute left-3 top-3 tech-label text-paper-dim/60">
-              purr.sys ·{" "}
-              <span className="text-cyan">{mood}</span>
+            <div className="pointer-events-none absolute left-3 top-3 leading-tight">
+              <div className="tech-label text-paper-dim/60">PURR.SYS</div>
+              <div className="tech-label text-cyan">{STATUS[mood]}</div>
             </div>
             {thought && (
-              <div className="pointer-events-none absolute left-3 top-8 font-mono text-[0.6rem] text-cyan/70">
+              <div className="pointer-events-none absolute left-3 top-12 font-mono text-[0.6rem] text-cyan/70">
                 &gt; {thought}
               </div>
             )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { sound } from "@/lib/sound";
+import { registerCat, type CatSignal } from "@/lib/catSignals";
 
 // A procedural line-art kitten - no assets. Watches the paw cursor, blinks and
 // flicks its tail on idle, purrs + floats hearts when pet, startles on fast
@@ -23,6 +24,7 @@ const THOUGHTS = [
 
 export type CatMood =
   | "SLEEPING"
+  | "DIZZY"
   | "STARTLED"
   | "PLAYING"
   | "PURRING"
@@ -106,6 +108,8 @@ export default function CatField({
       alert: 0,
       play: 0,
       asleep: 0,
+      trust: 0,
+      dizzy: 0,
       lookx: 0,
       looky: 0,
       leanx: 0,
@@ -124,6 +128,32 @@ export default function CatField({
     let prevAsleep = 0;
     let prevMood: CatMood | "" = "";
     let last = performance.now();
+    let scrollY = window.scrollY;
+    let scrollBias = 0;
+    let glance: { x: number; y: number; until: number } | null = null;
+    let perkUntil = 0;
+    const mountTime = performance.now();
+    let trustFired = false;
+    let dizzyAccum = 0;
+
+    const onSignal = (s: CatSignal) => {
+      const t = performance.now();
+      if (s.type === "glance") {
+        const r = box.getBoundingClientRect();
+        glance = { x: s.x - r.left, y: s.y - r.top, until: t + 1600 };
+      } else {
+        perkUntil = t + 1400;
+        if (s.label) thoughtCb.current?.(s.label);
+      }
+      lastActivity = t;
+    };
+    registerCat(onSignal);
+    const onScroll = () => {
+      const y = window.scrollY;
+      scrollBias = Math.max(-1, Math.min(1, (y - scrollY) * 0.04));
+      scrollY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     const ease = (cur: number, target: number, rate: number, dt: number) =>
       cur + (target - cur) * Math.min(1, dt * rate);
@@ -140,10 +170,21 @@ export default function CatField({
       P.px = P.x;
       P.py = P.y;
 
+      // sustained fast cursor makes the cat dizzy (tired of tracking)
+      dizzyAccum += P.inside && P.spd > 1000 ? dt * 1.3 : -dt * 1.2;
+      dizzyAccum = Math.max(0, Math.min(1.4, dizzyAccum));
+      S.dizzy = ease(S.dizzy, Math.min(1, dizzyAccum), 6, dt);
+
+      // trust builds after a minute on the page - the cat edges closer to you
+      S.trust = ease(S.trust, now - mountTime > 60000 ? 1 : 0, 0.4, dt);
+      if (!trustFired && S.trust > 0.5) {
+        trustFired = true;
+        thoughtCb.current?.("trust established");
+      }
       const size = Math.min(W * 0.5, H * 0.9);
-      const headR = size * 0.22;
+      const headR = size * 0.22 * (1 + S.trust * 0.12);
       const baseX = W / 2;
-      const baseY = H * 0.56;
+      const baseY = H * 0.56 + S.trust * headR * 0.2;
       const breathe = Math.sin(time * (S.asleep > 0.5 ? 0.9 : 1.6)) * headR * 0.02;
       const hx = baseX + S.leanx;
       const hy = baseY - headR * 0.55 + S.leany + breathe;
@@ -159,11 +200,13 @@ export default function CatField({
       }
       const toy = toys.length ? toys[toys.length - 1] : null;
       const chasing = !!toy;
+      const glanceActive = !!glance && now < glance.until && !P.inside;
+      const perking = now < perkUntil;
 
-      // focus point: toy if chasing, else the cursor
-      const fx = toy ? toy.x : P.x;
-      const fy = toy ? toy.y : P.y;
-      const focused = chasing || P.inside;
+      // focus: toy > cursor > external glance (hovering a comms card above)
+      const focused = chasing || P.inside || glanceActive;
+      const fx = toy ? toy.x : P.inside ? P.x : glanceActive ? glance!.x : P.x;
+      const fy = toy ? toy.y : P.inside ? P.y : glanceActive ? glance!.y : P.y;
       const dx = fx - hx;
       const dy = fy - hy;
       const dist = Math.hypot(dx, dy);
@@ -188,7 +231,7 @@ export default function CatField({
         !chasing && P.inside && dist < petR
           ? (1 - dist / petR) * (1 - startleT) * wake
           : 0;
-      const alertT = focused ? wake - startleT * 0.4 : 0;
+      const alertT = focused || perking ? wake - startleT * 0.4 : 0;
       const playT = chasing
         ? wake
         : P.inside && dist < headR * 3.6 && dist > petR * 0.75 && P.spd > 140 && P.spd < 1500
@@ -200,13 +243,26 @@ export default function CatField({
       S.alert = ease(S.alert, alertT, 5, dt);
       S.play = ease(S.play, playT, 6, dt);
       S.pupil = ease(S.pupil, (S.startle > 0.3 ? 1.55 : 1) - S.comfort * 0.45, 8, dt);
-      S.ear = ease(S.ear, (S.alert * 0.6 + S.play - S.startle * 1.4) * wake - S.asleep, 6, dt);
+      S.ear = ease(
+        S.ear,
+        (S.alert * 0.6 + S.play - S.startle * 1.4 + (perking ? 0.8 : 0)) * wake -
+          S.asleep -
+          S.dizzy * 1.2,
+        6,
+        dt,
+      );
 
-      const tx = focused ? Math.max(-1, Math.min(1, dx / (headR * 3))) * wake : 0;
-      const ty = focused ? Math.max(-1, Math.min(1, dy / (headR * 3))) * wake : 0;
+      // eyes track focus; when idle, drift with scroll; when dizzy, give up tracking
+      scrollBias *= 0.9;
+      const trk = 1 - S.dizzy;
+      const tx = (focused ? Math.max(-1, Math.min(1, dx / (headR * 3))) * wake : 0) * trk;
+      const ty =
+        (focused
+          ? Math.max(-1, Math.min(1, dy / (headR * 3))) * wake
+          : scrollBias * 0.6 * wake) * trk;
       S.lookx = ease(S.lookx, tx, 8, dt);
       S.looky = ease(S.looky, ty, 8, dt);
-      const leanK = S.comfort * 0.55 + S.alert * 0.12 + S.play * 0.4;
+      const leanK = S.comfort * 0.55 + S.alert * 0.12 + S.play * 0.4 + S.trust * 0.3;
       S.leanx = ease(S.leanx, tx * headR * 0.7 * leanK - S.startle * tx * headR * 0.5, 6, dt);
       S.leany = ease(S.leany, ty * headR * 0.4 * leanK - S.startle * headR * 0.35, 6, dt);
 
@@ -226,6 +282,7 @@ export default function CatField({
       // mood readout + sound cues
       let mood: CatMood = "DOZING";
       if (S.asleep > 0.55) mood = "SLEEPING";
+      else if (S.dizzy > 0.5) mood = "DIZZY";
       else if (S.startle > 0.4) mood = "STARTLED";
       else if (chasing) mood = "PLAYING";
       else if (S.comfort > 0.5) mood = "PURRING";
@@ -253,6 +310,7 @@ export default function CatField({
       }
 
       const vib = S.comfort * Math.sin(time * 38) * headR * 0.02;
+      const wob = S.dizzy * Math.sin(time * 9) * headR * 0.1; // dizzy head wobble
       const drop = S.asleep * headR * 0.45 - stretch * headR * 0.15;
       const hd = hy + drop;
 
@@ -270,6 +328,20 @@ export default function CatField({
       const fill = () => {
         ctx.fillStyle = `rgba(${FILL},0.55)`;
         ctx.shadowBlur = 0;
+      };
+      const star = (cx: number, cy: number, r: number, a: number) => {
+        ctx.beginPath();
+        for (let p = 0; p < 4; p++) {
+          const ang = (p / 4) * Math.PI * 2 - Math.PI / 2;
+          ctx.lineTo(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r);
+          const a2 = ang + Math.PI / 4;
+          ctx.lineTo(cx + Math.cos(a2) * r * 0.38, cy + Math.sin(a2) * r * 0.38);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255,233,170,${a})`;
+        ctx.shadowColor = "rgba(255,233,170,0.8)";
+        ctx.shadowBlur = size * 0.04;
+        ctx.fill();
       };
 
       // toys (drawn first, behind)
@@ -298,13 +370,16 @@ export default function CatField({
       }
 
       const bodyCx = baseX + S.leanx * 0.4;
-      const bodyCy = baseY + headR * 1.05 + breathe;
-      const bodyW = headR * (0.92 + S.asleep * 0.35);
-      const bodyH = headR * (1.4 - S.asleep * 0.45 + stretch * 0.2);
+      const bodyCy = baseY + headR * 1.0 + breathe;
+      const bodyW = headR * (1.0 + S.asleep * 0.35);
+      const bodyH = headR * (1.18 - S.asleep * 0.4 + stretch * 0.2);
 
       // tail
       const tailAmp = headR * (0.5 + S.alert * 0.4 + S.play * 0.9);
-      const tailWave = Math.sin(time * (1.5 + S.alert * 1.6 + S.play * 4)) * tailAmp * wake;
+      // tail (and legs below) go still when dizzy
+      const still = 1 - S.dizzy;
+      const tailWave =
+        Math.sin(time * (1.5 + S.alert * 1.6 + S.play * 4)) * tailAmp * wake * still;
       ctx.beginPath();
       const tsx = bodyCx + bodyW * 0.72;
       const tsy = bodyCy + bodyH * 0.25;
@@ -327,7 +402,7 @@ export default function CatField({
       ctx.stroke();
 
       // front paws
-      const pawLift = S.play * headR * 0.5;
+      const pawLift = S.play * headR * 0.5 * still;
       for (const sgn of [-1, 1]) {
         ctx.beginPath();
         const pxp = bodyCx + sgn * bodyW * 0.58 + vib;
@@ -338,6 +413,10 @@ export default function CatField({
         stroke(0.85);
         ctx.stroke();
       }
+
+      // ---- head group (wobbles when dizzy) ----
+      ctx.save();
+      ctx.translate(wob, 0);
 
       // ears
       const earUp = S.ear;
@@ -365,14 +444,26 @@ export default function CatField({
       stroke(1);
       ctx.stroke();
 
-      // eyes
-      const eyeY = hd + headR * 0.03;
-      const eyeDX = headR * 0.4;
-      const eyeR = headR * 0.33;
+      // eyes - smaller + less perfectly round = less "owl that has seen the source code"
+      const eyeY = hd + headR * 0.04;
+      const eyeDX = headR * 0.38;
+      const eyeR = headR * 0.24;
       const sleepy = S.asleep > 0.45;
       for (const sgn of [-1, 1]) {
         const ex = hx + sgn * eyeDX + vib;
-        if (sleepy || S.comfort > 0.55) {
+        if (S.dizzy > 0.45) {
+          // dazed swirl
+          stroke(0.9);
+          ctx.beginPath();
+          for (let a = 0; a < Math.PI * 3; a += 0.35) {
+            const rr = eyeR * 0.18 + a * eyeR * 0.09;
+            const sx = ex + Math.cos(a + time * 5) * rr;
+            const sy = eyeY + Math.sin(a + time * 5) * rr;
+            if (a === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.stroke();
+        } else if (sleepy || S.comfort > 0.55) {
           // closed / happy arc
           stroke(0.95);
           ctx.beginPath();
@@ -435,6 +526,22 @@ export default function CatField({
           ctx.moveTo(hx + sgn * headR * 0.2 + vib, wy);
           ctx.lineTo(hx + sgn * headR * 0.95 + vib, wy - headR * 0.06 + k * headR * 0.06);
           ctx.stroke();
+        }
+      }
+
+      ctx.restore(); // end head-group wobble
+
+      // dizzy stars orbiting the head
+      if (S.dizzy > 0.3) {
+        const n = 4;
+        for (let i = 0; i < n; i++) {
+          const a = time * 3 + (i / n) * Math.PI * 2;
+          star(
+            hx + Math.cos(a) * headR * 1.25,
+            hd - headR * 0.85 + Math.sin(a) * headR * 0.32,
+            headR * 0.14,
+            S.dizzy,
+          );
         }
       }
 
@@ -532,6 +639,8 @@ export default function CatField({
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      registerCat(null);
+      window.removeEventListener("scroll", onScroll);
       box.removeEventListener("pointermove", onMove);
       box.removeEventListener("pointerdown", onDown);
       box.removeEventListener("pointerleave", onLeave);
