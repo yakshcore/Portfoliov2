@@ -146,6 +146,8 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
         <BlueprintDiagram
           nodes={project.diagram.nodes}
           edges={project.diagram.edges}
+          detail={project.detail}
+          title={`FIG.${i + 1} · ${project.name}`}
           onOnline={handleOnline}
         />
       </div>
