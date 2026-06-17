@@ -86,6 +86,7 @@ export default function CatField({
     };
     const onMove = (e: PointerEvent) => setPos(e);
     const onDown = (e: PointerEvent) => {
+      if (e.button === 2) return; // right-click is the menu, not a toy throw
       setPos(e);
       clickPending = { x: P.x, y: P.y };
     };
@@ -135,17 +136,41 @@ export default function CatField({
     const mountTime = performance.now();
     let trustFired = false;
     let dizzyAccum = 0;
+    let ball: { x: number; y: number; vx: number; vy: number; life: number } | null = null;
+    let rollT = 0;
+    let treatT = 0;
+    let napUntil = 0;
+    const ROLL_DUR = 0.85;
 
     const onSignal = (s: CatSignal) => {
       const t = performance.now();
+      lastActivity = t;
       if (s.type === "glance") {
         const r = box.getBoundingClientRect();
         glance = { x: s.x - r.left, y: s.y - r.top, until: t + 1600 };
-      } else {
+      } else if (s.type === "perk") {
         perkUntil = t + 1400;
         if (s.label) thoughtCb.current?.(s.label);
+      } else {
+        if (s.name === "ball") {
+          ball = {
+            x: W * 0.3,
+            y: H * 0.4,
+            vx: (Math.random() * 2 - 1) * 280,
+            vy: (Math.random() * 2 - 1) * 220,
+            life: 9,
+          };
+          sound.play("chirp");
+        } else if (s.name === "roll") {
+          rollT = ROLL_DUR;
+          sound.play("chirp");
+        } else if (s.name === "treat") {
+          treatT = 1.6;
+          sound.play("meow");
+        } else {
+          napUntil = t + 7000;
+        }
       }
-      lastActivity = t;
     };
     registerCat(onSignal);
     const onScroll = () => {
@@ -172,7 +197,7 @@ export default function CatField({
 
       // sustained fast cursor makes the cat dizzy (tired of tracking)
       dizzyAccum += P.inside && P.spd > 1000 ? dt * 1.3 : -dt * 1.2;
-      dizzyAccum = Math.max(0, Math.min(1.4, dizzyAccum));
+      dizzyAccum = Math.max(0, Math.min(2.2, dizzyAccum));
       S.dizzy = ease(S.dizzy, Math.min(1, dizzyAccum), 6, dt);
 
       // trust builds after a minute on the page - the cat edges closer to you
@@ -198,22 +223,46 @@ export default function CatField({
         }
         clickPending = null;
       }
-      const toy = toys.length ? toys[toys.length - 1] : null;
-      const chasing = !!toy;
+      // ball physics (thrown from the right-click menu) - bounces, she bats it
+      if (ball) {
+        ball.life -= dt;
+        ball.x += ball.vx * dt;
+        ball.y += ball.vy * dt;
+        ball.vx *= 0.992;
+        ball.vy *= 0.992;
+        const m = headR * 0.3;
+        if (ball.x < m) { ball.x = m; ball.vx = Math.abs(ball.vx); }
+        if (ball.x > W - m) { ball.x = W - m; ball.vx = -Math.abs(ball.vx); }
+        if (ball.y < m) { ball.y = m; ball.vy = Math.abs(ball.vy); }
+        if (ball.y > H - m) { ball.y = H - m; ball.vy = -Math.abs(ball.vy); }
+        const pawZoneY = hy + headR * 1.2;
+        if (Math.hypot(ball.x - hx, ball.y - pawZoneY) < headR * 0.85) {
+          const ang = Math.atan2(ball.y - pawZoneY, ball.x - hx);
+          ball.vx = Math.cos(ang) * 320 + (Math.random() * 2 - 1) * 60;
+          ball.vy = Math.sin(ang) * 320 - 90;
+          if (Math.random() < 0.08) sound.play("chirp");
+        }
+        if (ball.life <= 0) ball = null;
+      }
+
+      const clickToy = toys.length ? toys[toys.length - 1] : null;
+      const focusObj = ball ?? clickToy;
+      const chasing = !!focusObj;
       const glanceActive = !!glance && now < glance.until && !P.inside;
       const perking = now < perkUntil;
 
-      // focus: toy > cursor > external glance (hovering a comms card above)
+      // focus: toy/ball > cursor > external glance (hovering a comms card above)
       const focused = chasing || P.inside || glanceActive;
-      const fx = toy ? toy.x : P.inside ? P.x : glanceActive ? glance!.x : P.x;
-      const fy = toy ? toy.y : P.inside ? P.y : glanceActive ? glance!.y : P.y;
+      const fx = focusObj ? focusObj.x : P.inside ? P.x : glanceActive ? glance!.x : P.x;
+      const fy = focusObj ? focusObj.y : P.inside ? P.y : glanceActive ? glance!.y : P.y;
       const dx = fx - hx;
       const dy = fy - hy;
       const dist = Math.hypot(dx, dy);
       const petR = headR * 2.5;
 
       // sleep when left alone (no toy, no recent activity)
-      const asleepT = !chasing && now - lastActivity > 9000 ? 1 : 0;
+      const napping = napUntil > now;
+      const asleepT = !chasing && (napping || now - lastActivity > 9000) ? 1 : 0;
       S.asleep = ease(S.asleep, asleepT, 1.6, dt);
       if (prevAsleep > 0.5 && S.asleep < 0.5) {
         stretch = 0.7;
@@ -239,6 +288,10 @@ export default function CatField({
           : 0;
 
       S.comfort = ease(S.comfort, comfortT, 6, dt);
+      if (treatT > 0) {
+        treatT = Math.max(0, treatT - dt);
+        S.comfort = Math.max(S.comfort, 0.85); // she's happily eating
+      }
       S.startle = ease(S.startle, startleT, 11, dt);
       S.alert = ease(S.alert, alertT, 5, dt);
       S.play = ease(S.play, playT, 6, dt);
@@ -373,6 +426,31 @@ export default function CatField({
       const bodyCy = baseY + headR * 1.0 + breathe;
       const bodyW = headR * (1.0 + S.asleep * 0.35);
       const bodyH = headR * (1.18 - S.asleep * 0.4 + stretch * 0.2);
+
+      // play ball (behind the cat, doesn't rotate with the roll)
+      if (ball) {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, headR * 0.18, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${TOY},0.9)`;
+        ctx.shadowColor = `rgba(${TOY},0.8)`;
+        ctx.shadowBlur = size * 0.05;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${FILL},0.5)`;
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = lw;
+        ctx.stroke();
+      }
+
+      // barrel roll spins the whole cat
+      ctx.save();
+      if (rollT > 0) {
+        rollT = Math.max(0, rollT - dt);
+        if (rollT === 0) dizzyAccum = 2.0; // all that spinning -> dizzy
+        const ang = (1 - rollT / ROLL_DUR) * Math.PI * 2;
+        ctx.translate(baseX, baseY);
+        ctx.rotate(ang);
+        ctx.translate(-baseX, -baseY);
+      }
 
       // tail
       const tailAmp = headR * (0.5 + S.alert * 0.4 + S.play * 0.9);
@@ -600,6 +678,8 @@ export default function CatField({
           );
         }
       }
+
+      ctx.restore(); // end barrel-roll transform
 
       // paw cursor
       if (P.inside) {

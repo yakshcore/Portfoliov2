@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { identity } from "@/data/portfolio";
 import SectionHeader from "@/components/SectionHeader";
 import CatField, { type CatMood } from "@/components/CatField";
-import { sendCat } from "@/lib/catSignals";
+import { sendCat, type CatAct } from "@/lib/catSignals";
+import { sound } from "@/lib/sound";
+
+const CAT_ACTIONS: { icon: string; label: string; act: CatAct }[] = [
+  { icon: "◍", label: "give a ball", act: "ball" },
+  { icon: "↻", label: "barrel roll", act: "roll" },
+  { icon: "✦", label: "treat", act: "treat" },
+  { icon: "☾", label: "nap", act: "nap" },
+];
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,11 +54,17 @@ export default function Contact() {
   const [armed, setArmed] = useState(false);
   const [mood, setMood] = useState<CatMood>("DOZING");
   const [thought, setThought] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
   const thoughtTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showThought = (t: string) => {
     setThought(t);
     if (thoughtTimer.current) clearTimeout(thoughtTimer.current);
     thoughtTimer.current = setTimeout(() => setThought(null), 4200);
+  };
+  const runAct = (act: CatAct) => {
+    sound.play("blip");
+    sendCat({ type: "act", name: act });
+    setMenu(null);
   };
 
   useEffect(() => {
@@ -161,11 +176,17 @@ export default function Contact() {
             ))}
           </div>
 
-          {/* resident kitten - watches the cursor, purrs when pet, chases a toy */}
-          <div className="contact-reveal relative min-h-[240px] flex-1 overflow-hidden rounded border border-line-faint bg-ink-900/40">
+          {/* Nyx - watches the cursor, purrs when pet, chases a toy; right-click for tricks */}
+          <div
+            className="contact-reveal relative min-h-[240px] flex-1 overflow-hidden rounded border border-line-faint bg-ink-900/40"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setMenu({ x: e.clientX, y: e.clientY });
+            }}
+          >
             <CatField onMood={setMood} onThought={showThought} />
             <div className="pointer-events-none absolute left-3 top-3 leading-tight">
-              <div className="tech-label text-paper-dim/60">PURR.SYS</div>
+              <div className="tech-label text-paper-dim/60">NYX · purr.sys</div>
               <div className="tech-label text-cyan">{STATUS[mood]}</div>
             </div>
             {thought && (
@@ -174,7 +195,7 @@ export default function Contact() {
               </div>
             )}
             <div className="pointer-events-none absolute bottom-3 right-3 tech-label text-[0.5rem] text-paper-dim/40">
-              HOVER TO PET · CLICK TO PLAY
+              PET · CLICK TO PLAY · RIGHT-CLICK NYX
             </div>
           </div>
         </div>
@@ -188,6 +209,44 @@ export default function Contact() {
         <span>DRAWING NO. YB-2026 · END OF SCHEMATIC</span>
         <span className="text-cyan">UPLINK · STABLE</span>
       </div>
+
+      {/* Nyx command menu (right-click) - portaled so it escapes the box clip */}
+      {menu &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[70]"
+            onClick={() => setMenu(null)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setMenu(null);
+            }}
+          >
+            <div
+              className="absolute w-44 border border-line-faint bg-ink-900/95 backdrop-blur"
+              style={{
+                left: Math.min(menu.x, window.innerWidth - 188),
+                top: Math.min(menu.y, window.innerHeight - 168),
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="tech-label border-b border-line-faint px-3 py-2 text-cyan">
+                NYX · COMMANDS
+              </div>
+              {CAT_ACTIONS.map((a) => (
+                <button
+                  key={a.act}
+                  onClick={() => runAct(a.act)}
+                  onMouseEnter={() => sound.play("hover")}
+                  className="flex w-full items-center gap-3 px-3 py-2 text-left font-mono text-xs text-paper-dim transition-colors hover:bg-ink-800 hover:text-cyan"
+                >
+                  <span className="w-4 text-center text-cyan">{a.icon}</span>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
