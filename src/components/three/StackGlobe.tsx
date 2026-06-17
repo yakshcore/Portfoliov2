@@ -297,14 +297,15 @@ function Globe({
         />
       </mesh>
 
-      {/* faint shell + inner fill for depth */}
+      {/* faint shell + inner fill for depth — shell kept visible enough that the
+          full sphere reads as centered even when only the low bands are lit */}
       <mesh renderOrder={0}>
         <sphereGeometry args={[R * 0.985, 28, 18]} />
         <meshBasicMaterial
-          color="#163152"
+          color="#1c3a5c"
           wireframe
           transparent
-          opacity={0.14}
+          opacity={0.22}
         />
       </mesh>
       <mesh renderOrder={-1}>

@@ -91,20 +91,32 @@ export default function Hero({ started }: { started: boolean }) {
     const tc = textCol.current;
     const gw = globeWrap.current;
     if (storyOpen) {
-      gsap.to(tc, { opacity: 0, y: -12, duration: 0.35, ease: "power2.in" });
+      gsap.to(tc, {
+        opacity: 0,
+        y: -12,
+        duration: 0.35,
+        ease: "power2.in",
+        overwrite: "auto",
+      });
       gsap.to(gw, {
         scale: 1.45,
         opacity: 0,
         duration: 0.55,
         ease: "power2.in",
+        transformOrigin: "center center",
+        overwrite: "auto",
       });
     } else {
+      // ease back, then clear all GSAP-set props so no transform residue can
+      // leave the globe shifted (e.g. when ESC interrupts the open tween)
       gsap.to(tc, {
         opacity: 1,
         y: 0,
         duration: 0.55,
         ease: "power3.out",
         delay: 0.1,
+        overwrite: "auto",
+        clearProps: "opacity,transform",
       });
       gsap.to(gw, {
         scale: 1,
@@ -112,6 +124,9 @@ export default function Hero({ started }: { started: boolean }) {
         duration: 0.6,
         ease: "power3.out",
         delay: 0.1,
+        transformOrigin: "center center",
+        overwrite: "auto",
+        clearProps: "opacity,transform",
       });
     }
   }, [storyOpen]);
@@ -191,13 +206,14 @@ export default function Hero({ started }: { started: boolean }) {
               </span>
             </div>
 
-            {/* reset - appears once the globe is fully mapped */}
-            {complete && (
+            {/* reset - shows on any progress (partial or complete); sits under the
+                top-right readout so it never blends with the bottom affordance */}
+            {reached > 0 && (
               <button
                 onClick={handleReset}
                 onMouseEnter={() => sound.play("hover")}
                 aria-label="Reset stack progress"
-                className="pointer-events-auto absolute bottom-4 right-3 z-10 flex items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-amber hover:text-amber"
+                className="pointer-events-auto absolute right-3 top-10 z-10 flex items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-amber hover:text-amber"
               >
                 <span className="text-sm leading-none">↺</span> RESET
               </button>
