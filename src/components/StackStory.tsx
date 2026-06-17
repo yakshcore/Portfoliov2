@@ -11,24 +11,22 @@ const StackGlobe = dynamic(() => import("@/components/three/StackGlobe"), {
 });
 
 const { title, line, layers } = stackStory;
-const clampIdx = (i: number) => Math.max(0, Math.min(layers.length - 1, i));
+const lastIdx = layers.length - 1;
+const clampIdx = (i: number) => Math.max(0, Math.min(lastIdx, i));
 
 export default function StackStory({
   open,
   onClose,
-  onProgress,
 }: {
   open: boolean;
   onClose: () => void;
-  onProgress?: (layer: number) => void;
 }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   activeRef.current = active;
-  // furthest layer the visitor descends to - persisted onto the hero globe
-  const maxReached = useRef(0);
+  const atEnd = active >= lastIdx;
 
   // globe drag-rotate state + hovered-tag node
   const controlsRef = useRef<GlobeControls>({
@@ -108,17 +106,19 @@ export default function StackStory({
     if (!open) return;
     setActive(0);
     activeRef.current = 0;
-    maxReached.current = 0;
     if (scroller.current) scroller.current.scrollTop = 0;
 
-    const raf = requestAnimationFrame(() => setMounted(true));
+    // hold the fade so the hero globe's power-down is visible before we cover it
+    const t = setTimeout(() => setMounted(true), 260);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     sound.play("online");
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowDown" || e.key === "PageDown") {
+      // can't bail mid-descent - Escape only works once the stack is complete
+      if (e.key === "Escape") {
+        if (activeRef.current >= lastIdx) onClose();
+      } else if (e.key === "ArrowDown" || e.key === "PageDown") {
         e.preventDefault();
         scrollToChapter(activeRef.current + 1);
       } else if (e.key === "ArrowUp" || e.key === "PageUp") {
@@ -129,7 +129,7 @@ export default function StackStory({
     window.addEventListener("keydown", onKey);
 
     return () => {
-      cancelAnimationFrame(raf);
+      clearTimeout(t);
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
       setMounted(false);
@@ -143,10 +143,6 @@ export default function StackStory({
     if (i !== activeRef.current) {
       setActive(i);
       sound.play("blip");
-      if (i > maxReached.current) {
-        maxReached.current = i;
-        onProgress?.(i);
-      }
     }
   };
 
@@ -185,18 +181,27 @@ export default function StackStory({
         </p>
       </div>
 
-      {/* close */}
-      <button
-        onClick={() => {
-          sound.play("blip");
-          onClose();
-        }}
-        onMouseEnter={() => sound.play("hover")}
-        className="absolute right-5 top-5 z-20 flex h-9 items-center gap-2 border border-line-faint bg-ink-900/80 px-3 font-mono text-xs text-paper-dim transition-colors hover:border-cyan hover:text-cyan md:right-10"
-        aria-label="Close stack story"
-      >
-        ESC <span className="text-base leading-none">×</span>
-      </button>
+      {/* exit - locked until the descent is complete (no half-closing) */}
+      {atEnd ? (
+        <button
+          onClick={() => {
+            sound.play("online");
+            onClose();
+          }}
+          onMouseEnter={() => sound.play("hover")}
+          className="absolute right-5 top-5 z-20 flex h-9 items-center gap-2 border border-cyan/60 bg-ink-900/80 px-3 font-mono text-xs text-cyan transition-colors hover:bg-cyan/10 md:right-10"
+          aria-label="Return to hero"
+        >
+          RETURN <span className="text-base leading-none">↩</span>
+        </button>
+      ) : (
+        <div
+          className="absolute right-5 top-5 z-20 flex h-9 items-center gap-2 border border-line-faint bg-ink-900/60 px-3 font-mono text-xs text-paper-dim/60 md:right-10"
+          aria-hidden
+        >
+          <span className="text-sm leading-none">⌁</span> DESCEND TO EXIT
+        </div>
+      )}
 
       {/* progress rail */}
       <div className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 flex-col gap-3 md:flex">
@@ -319,9 +324,7 @@ export default function StackStory({
       {/* scroll hint */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1.5">
         <span className="tech-label text-[0.55rem]">
-          {active < layers.length - 1
-            ? "SCROLL TO DESCEND"
-            : "FRONTIER REACHED"}
+          {atEnd ? "STACK COMPLETE · EXIT UNLOCKED" : "SCROLL TO DESCEND"}
         </span>
         <span className="h-7 w-px animate-pulse bg-gradient-to-b from-cyan to-transparent" />
       </div>

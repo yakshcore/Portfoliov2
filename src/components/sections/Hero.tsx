@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { identity, systemStats, stackStory } from "@/data/portfolio";
-import { sound } from "@/lib/sound";
 import Typewriter from "@/components/Typewriter";
 
 const HeroStackGlobe = dynamic(
@@ -21,46 +20,13 @@ const STACK_MAX = STACK_LEN - 1;
 export default function Hero({ started }: { started: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const textCol = useRef<HTMLDivElement>(null);
-  const globeWrap = useRef<HTMLDivElement>(null);
   const [storyOpen, setStoryOpen] = useState(false);
 
-  // furthest stack layer the visitor has mapped - the hero globe renders this
-  // "completion" state, and it survives across visits via localStorage.
-  const [reached, setReached] = useState(0);
-  const reachedRef = useRef(0);
-
-  useEffect(() => {
-    let v = 0;
-    try {
-      v = parseInt(localStorage.getItem("yb-stack-reached") || "0", 10) || 0;
-    } catch {}
-    v = Math.max(0, Math.min(STACK_MAX, v));
-    reachedRef.current = v;
-    setReached(v);
-  }, []);
-
-  const handleProgress = (layer: number) => {
-    setReached((prev) => {
-      const next = Math.max(prev, layer);
-      reachedRef.current = next;
-      try {
-        localStorage.setItem("yb-stack-reached", String(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const complete = reached >= STACK_MAX;
-
-  // wipe progress so the globe returns to its incomplete state - ready to rebuild
-  const handleReset = () => {
-    sound.play("blip");
-    reachedRef.current = 0;
-    setReached(0);
-    try {
-      localStorage.setItem("yb-stack-reached", "0");
-    } catch {}
-  };
+  // the hero globe is always fully active. activeRef is an animated power level:
+  // it powers DOWN (all layers off, one by one) when the story opens, and powers
+  // back UP to full when it closes. No persistence - it's purely presentational.
+  const activeRef = useRef(STACK_MAX);
+  const power = useRef({ v: STACK_MAX });
 
   useEffect(() => {
     if (!started) return;
@@ -80,8 +46,9 @@ export default function Hero({ started }: { started: boolean }) {
     return () => ctx.revert();
   }, [started]);
 
-  // double-tap transition: zoom the hero globe in + fade the hero content out
-  // so the fullscreen story reads as "diving into" the globe (and reverses on close)
+  // double-tap transition: fade the hero text out and power the globe DOWN so
+  // every node and layer visibly switches off before the story takes over;
+  // on close, power it back UP to full so it "accepts its position" on the hero.
   const firstRun = useRef(true);
   useEffect(() => {
     if (firstRun.current) {
@@ -89,44 +56,40 @@ export default function Hero({ started }: { started: boolean }) {
       return;
     }
     const tc = textCol.current;
-    const gw = globeWrap.current;
+    const setActive = () => {
+      activeRef.current = power.current.v;
+    };
     if (storyOpen) {
       gsap.to(tc, {
         opacity: 0,
         y: -12,
-        duration: 0.35,
+        duration: 0.4,
         ease: "power2.in",
         overwrite: "auto",
       });
-      gsap.to(gw, {
-        scale: 1.45,
-        opacity: 0,
-        duration: 0.55,
-        ease: "power2.in",
-        transformOrigin: "center center",
+      gsap.to(power.current, {
+        v: -1.2,
+        duration: 0.75,
+        ease: "power2.inOut",
         overwrite: "auto",
+        onUpdate: setActive,
       });
     } else {
-      // ease back, then clear all GSAP-set props so no transform residue can
-      // leave the globe shifted (e.g. when ESC interrupts the open tween)
       gsap.to(tc, {
         opacity: 1,
         y: 0,
-        duration: 0.55,
+        duration: 0.6,
         ease: "power3.out",
-        delay: 0.1,
+        delay: 0.15,
         overwrite: "auto",
         clearProps: "opacity,transform",
       });
-      gsap.to(gw, {
-        scale: 1,
-        opacity: 1,
-        duration: 0.6,
-        ease: "power3.out",
-        delay: 0.1,
-        transformOrigin: "center center",
+      gsap.to(power.current, {
+        v: STACK_MAX,
+        duration: 1.0,
+        ease: "power2.out",
         overwrite: "auto",
-        clearProps: "opacity,transform",
+        onUpdate: setActive,
       });
     }
   }, [storyOpen]);
@@ -182,52 +145,30 @@ export default function Hero({ started }: { started: boolean }) {
 
         {/* ---- RIGHT: globe column ---- */}
         <div className="hero-globe group relative h-[42vh] min-h-[320px] w-full lg:h-[78vh]">
-          <div ref={globeWrap} className="absolute inset-0">
-            <HeroStackGlobe
-              reachedRef={reachedRef}
-              onOpen={() => setStoryOpen(true)}
-            />
-            <div className="pointer-events-none absolute inset-0 grid-vignette" />
-            {/* globe annotations - opposite corners so nothing overlaps */}
-            <div className="pointer-events-none absolute left-3 top-3 tech-label text-cyan/70">
-              STACK GRAPH · {complete ? "COMPLETE" : "PARTIAL"}
-            </div>
-            <div className="pointer-events-none absolute right-3 top-3 tech-label text-paper-dim">
-              LAYER {String(reached + 1).padStart(2, "0")} /{" "}
-              {String(STACK_LEN).padStart(2, "0")} MAPPED
-            </div>
-            {/* double-tap affordance - bottom-center, clear of the corner labels */}
-            <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap border border-cyan/30 bg-ink-900/70 px-3 py-1 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 sm:opacity-70">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan shadow-[0_0_8px_var(--cyan)]" />
-              <span className="tech-label text-[0.55rem] text-cyan">
-                {complete
-                  ? "DOUBLE-TAP TO RE-EXPLORE THE STACK"
-                  : "DOUBLE-TAP TO COMPLETE THE GLOBE"}
-              </span>
-            </div>
-
-            {/* reset - shows on any progress (partial or complete); sits under the
-                top-right readout so it never blends with the bottom affordance */}
-            {reached > 0 && (
-              <button
-                onClick={handleReset}
-                onMouseEnter={() => sound.play("hover")}
-                aria-label="Reset stack progress"
-                className="pointer-events-auto absolute right-3 top-10 z-10 flex items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-amber hover:text-amber"
-              >
-                <span className="text-sm leading-none">↺</span> RESET
-              </button>
-            )}
+          <HeroStackGlobe
+            activeRef={activeRef}
+            onOpen={() => setStoryOpen(true)}
+          />
+          <div className="pointer-events-none absolute inset-0 grid-vignette" />
+          {/* globe annotations - opposite corners so nothing overlaps */}
+          <div className="pointer-events-none absolute left-3 top-3 tech-label text-cyan/70">
+            STACK GRAPH · ONLINE
+          </div>
+          <div className="pointer-events-none absolute right-3 top-3 tech-label text-paper-dim">
+            {String(STACK_LEN).padStart(2, "0")} LAYERS · LIVE
+          </div>
+          {/* double-tap affordance - bottom-center, clear of the corner labels */}
+          <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap border border-cyan/30 bg-ink-900/70 px-3 py-1 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 sm:opacity-70">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan shadow-[0_0_8px_var(--cyan)]" />
+            <span className="tech-label text-[0.55rem] text-cyan">
+              DOUBLE-TAP TO EXPLORE THE STACK
+            </span>
           </div>
         </div>
       </div>
 
       {/* fullscreen scroll-story launched from the globe */}
-      <StackStory
-        open={storyOpen}
-        onClose={() => setStoryOpen(false)}
-        onProgress={handleProgress}
-      />
+      <StackStory open={storyOpen} onClose={() => setStoryOpen(false)} />
 
       {/* scroll cue */}
       <div className="hero-anim absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">

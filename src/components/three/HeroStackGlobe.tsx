@@ -12,14 +12,15 @@ const StackGlobe = dynamic(() => import("@/components/three/StackGlobe"), {
 
 const { layers } = stackStory;
 
-// The hero globe IS the stack globe, shown in whatever "completion" state the
-// visitor has reached. Single tap does nothing; a double-tap / double-click
-// opens the fullscreen scroll-story. Drag still spins it 360°.
+// The hero globe IS the stack globe, shown fully active by default. Single tap
+// does nothing; a double-tap / double-click opens the fullscreen scroll-story
+// (and powers the globe down on the way in). Drag still spins it 360°.
+// activeRef holds an animated power level driven by the hero (full -> off -> full).
 export default function HeroStackGlobe({
-  reachedRef,
+  activeRef,
   onOpen,
 }: {
-  reachedRef: React.RefObject<number>;
+  activeRef: React.RefObject<number>;
   onOpen: () => void;
 }) {
   const controlsRef = useRef<GlobeControls>({
@@ -124,7 +125,7 @@ export default function HeroStackGlobe({
     >
       <StackGlobe
         layers={layers}
-        activeRef={reachedRef}
+        activeRef={activeRef}
         controlsRef={controlsRef}
         hoverRef={hoverRef}
         staticFrame

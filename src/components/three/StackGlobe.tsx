@@ -22,6 +22,7 @@ function layerLatitude(i: number, n: number) {
 
 const DIM = new THREE.Color("#244b6e");
 const HL = new THREE.Color("#eaffff"); // hovered-node highlight
+const SPINE_DIM = new THREE.Color("#0e1d33"); // unlit inter-layer connection
 
 // shared drag state - fed by pointer handlers in the overlay
 export type GlobeControls = {
@@ -92,8 +93,11 @@ function Globe({
       }),
     );
 
-    // spine: connect each node to the angular-nearest node one band up
+    // spine: connect each node to the angular-nearest node one band up.
+    // spineLevel tags each segment with the lower band index so the connection
+    // can light up the moment that next layer comes online.
     const spine: number[] = [];
+    const spineLevel: number[] = [];
     for (let i = 0; i < layered.length - 1; i++) {
       const a = layered[i];
       const b = layered[i + 1];
@@ -108,9 +112,10 @@ function Globe({
           }
         });
         spine.push(pa.x, pa.y, pa.z, best.x, best.y, best.z);
+        spineLevel.push(i, i); // two verts per segment
       });
     }
-    return { layered, flat, nodeLayer, nodeItem, spine };
+    return { layered, flat, nodeLayer, nodeItem, spine, spineLevel };
   }, [layers]);
 
   const ringGeoms = useMemo(
@@ -148,12 +153,20 @@ function Globe({
     return g;
   }, [built]);
 
+  const spineMat = useRef<THREE.LineBasicMaterial>(null);
   const spineGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute(
       "position",
       new THREE.Float32BufferAttribute(built.spine, 3),
     );
+    const colors = new Float32Array(built.spineLevel.length * 3);
+    for (let i = 0; i < built.spineLevel.length; i++) {
+      colors[i * 3] = SPINE_DIM.r;
+      colors[i * 3 + 1] = SPINE_DIM.g;
+      colors[i * 3 + 2] = SPINE_DIM.b;
+    }
+    g.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
     return g;
   }, [built]);
 
@@ -233,6 +246,20 @@ function Globe({
       m.depthTest = !lit;
     });
 
+    // inter-layer connections light up one band at a time: the link from band
+    // L to L+1 energizes the moment layer L+1 comes online.
+    const spineCol = spineGeo.getAttribute("color") as THREE.BufferAttribute;
+    for (let i = 0; i < built.spineLevel.length; i++) {
+      const lvl = built.spineLevel[i];
+      const target = active >= lvl + 1 ? accentColors[lvl] : SPINE_DIM;
+      tmpC.setRGB(spineCol.getX(i), spineCol.getY(i), spineCol.getZ(i));
+      tmpC.lerp(target, k);
+      spineCol.setXYZ(i, tmpC.r, tmpC.g, tmpC.b);
+    }
+    spineCol.needsUpdate = true;
+    if (spineMat.current)
+      spineMat.current.opacity += (0.85 - spineMat.current.opacity) * k;
+
     // halo follows the hovered node (visible even through the globe)
     if (halo.current) {
       const ring = hover ? built.layered[hover.layer] : null;
@@ -250,9 +277,16 @@ function Globe({
 
   return (
     <group ref={group}>
-      {/* spine connecting the layers */}
-      <lineSegments geometry={spineGeo}>
-        <lineBasicMaterial color="#1f4368" transparent opacity={0.35} />
+      {/* spine connecting the layers - lights up level by level */}
+      <lineSegments geometry={spineGeo} renderOrder={1}>
+        <lineBasicMaterial
+          ref={spineMat}
+          vertexColors
+          transparent
+          opacity={0.85}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </lineSegments>
 
       {/* per-layer rings */}
