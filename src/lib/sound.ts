@@ -1,6 +1,6 @@
 // ============================================================
 // MISSION-CONTROL SOUND ENGINE
-// Fully synthesized via Web Audio API — no asset files.
+// Fully synthesized via Web Audio API - no asset files.
 // Subtle, tasteful, off by default. Respects autoplay policy.
 // ============================================================
 
@@ -52,7 +52,7 @@ class SoundEngine {
       this.master.gain.setTargetAtTime(
         on ? 0.5 : 0.0,
         this.ctx!.currentTime,
-        0.05
+        0.05,
       );
     try {
       localStorage.setItem("yb-sound", on ? "on" : "off");
@@ -70,7 +70,7 @@ class SoundEngine {
     gain: GainNode,
     t: number,
     dur: number,
-    peak: number
+    peak: number,
   ) {
     gain.gain.setValueAtTime(0, t);
     gain.gain.linearRampToValueAtTime(peak, t + 0.008);
@@ -90,7 +90,7 @@ class SoundEngine {
       type: OscillatorType,
       peak: number,
       detune = 0,
-      delay = 0
+      delay = 0,
     ) => {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();

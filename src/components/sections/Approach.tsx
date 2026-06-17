@@ -11,7 +11,7 @@ const PRINCIPLES = [
   {
     no: "P-01",
     title: "Own the whole stack",
-    body: "From system design to production deploy — architecture, services, CI/CD, and performance are one continuous responsibility, not separate jobs.",
+    body: "From system design to production deploy - architecture, services, CI/CD, and performance are one continuous responsibility, not separate jobs.",
   },
   {
     no: "P-02",
@@ -21,7 +21,7 @@ const PRINCIPLES = [
   {
     no: "P-03",
     title: "AI as infrastructure",
-    body: "LLMs (Gemini · Claude · OpenAI) integrated as dependable subsystems inside real products — not bolted-on gimmicks.",
+    body: "LLMs (Gemini · Claude · OpenAI) integrated as dependable subsystems inside real products - not bolted-on gimmicks.",
   },
   {
     no: "P-04",
@@ -62,7 +62,10 @@ export default function Approach() {
       />
       <div className="grid gap-px border border-line-faint bg-line-faint md:grid-cols-2">
         {PRINCIPLES.map((p) => (
-          <div key={p.no} className="pr-card group bg-ink-900 p-7 transition-colors hover:bg-ink-800">
+          <div
+            key={p.no}
+            className="pr-card group bg-ink-900 p-7 transition-colors hover:bg-ink-800"
+          >
             <div className="flex items-baseline justify-between">
               <span className="tech-label text-amber">{p.no}</span>
               <span className="font-display text-3xl text-line-faint transition-colors group-hover:text-line-dim">

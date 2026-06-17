@@ -57,7 +57,7 @@ export default function About() {
               ["BASE", identity.location],
               ["EXPERIENCE", "2+ years · production scale"],
               ["FOCUS", "MERN · AI/LLM · Cloud-native"],
-              ["EDUCATION", "BCA — SSIU (exp. Aug 2026)"],
+              ["EDUCATION", "BCA - SSIU (exp. Aug 2026)"],
               ["STATUS", "Open to roles & freelance"],
             ].map(([k, v]) => (
               <div key={k} className="flex gap-4 px-5 py-3">

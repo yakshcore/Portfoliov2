@@ -70,7 +70,7 @@ export default function BlueprintDiagram({
       ({ tx: ntx, ty: nty } = clampPan(ntx, nty, next));
       setView({ scale: next, tx: ntx, ty: nty });
     },
-    [clampPan]
+    [clampPan],
   );
 
   // non-passive wheel listener so we can preventDefault (and not fight Lenis)
@@ -115,7 +115,7 @@ export default function BlueprintDiagram({
     zoomAt(
       rect.left + rect.width / 2,
       rect.top + rect.height / 2,
-      dir === 1 ? 1.4 : 1 / 1.4
+      dir === 1 ? 1.4 : 1 / 1.4,
     );
   };
   const resetView = () => {
@@ -127,7 +127,9 @@ export default function BlueprintDiagram({
   useEffect(() => {
     const el = root.current;
     if (!el) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     const paths = el.querySelectorAll<SVGPathElement>("path.edge");
     const flows = el.querySelectorAll<SVGPathElement>("path.flow");
@@ -162,7 +164,7 @@ export default function BlueprintDiagram({
         scan,
         { top: "0%", opacity: 0.9 },
         { top: "100%", duration: 0.6, ease: "power1.inOut" },
-        0
+        0,
       ).to(scan, { opacity: 0, duration: 0.2 }, 0.6);
     }
 
@@ -175,7 +177,7 @@ export default function BlueprintDiagram({
         ease: "back.out(2)",
         onStart: () => sound.play("boot"),
       },
-      0.25
+      0.25,
     )
       .to(
         paths,
@@ -185,7 +187,7 @@ export default function BlueprintDiagram({
           duration: 0.5,
           ease: "power1.inOut",
         },
-        0.5
+        0.5,
       )
       .to(labels, { opacity: 1, stagger: 0.05 }, 0.9)
       .to(flows, { opacity: 1, duration: 0.4 }, ">-0.1");
@@ -208,16 +210,20 @@ export default function BlueprintDiagram({
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
       className={`diagram relative aspect-[5/3] w-full touch-none select-none overflow-hidden rounded border border-line-faint bg-ink-800/40 ${
-        panned ? (dragging.current ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in"
+        panned
+          ? dragging.current
+            ? "cursor-grabbing"
+            : "cursor-grab"
+          : "cursor-zoom-in"
       }`}
     >
-      {/* PINNED background — does not pan/zoom */}
+      {/* PINNED background - does not pan/zoom */}
       <div className="pointer-events-none absolute inset-0 rounded blueprint-grid opacity-60" />
 
       {/* boot scan line (also pinned) */}
       <div className="boot-scan pointer-events-none absolute left-0 h-px w-full bg-gradient-to-r from-transparent via-cyan to-transparent opacity-0 shadow-[0_0_12px_var(--cyan)]" />
 
-      {/* TRANSFORMED viewport — the map that pans/zooms */}
+      {/* TRANSFORMED viewport - the map that pans/zooms */}
       <div
         className="absolute inset-0 origin-top-left will-change-transform"
         style={{ transform }}
@@ -328,7 +334,9 @@ export default function BlueprintDiagram({
             onClick={b.fn}
             onMouseEnter={() => sound.play("hover")}
             className="flex h-7 w-7 items-center justify-center bg-ink-900 font-mono text-sm text-paper-dim transition-colors hover:bg-ink-800 hover:text-cyan"
-            aria-label={b.k === "+" ? "Zoom in" : b.k === "−" ? "Zoom out" : "Reset view"}
+            aria-label={
+              b.k === "+" ? "Zoom in" : b.k === "−" ? "Zoom out" : "Reset view"
+            }
           >
             {b.k}
           </button>

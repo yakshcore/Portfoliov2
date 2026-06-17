@@ -33,8 +33,8 @@ function buildGraph(count: number, radius: number) {
       new THREE.Vector3(
         radius * Math.sin(phi) * Math.cos(theta),
         radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi)
-      )
+        radius * Math.cos(phi),
+      ),
     );
   }
   const edges: [number, number][] = [];
@@ -82,8 +82,8 @@ function Structure({ controls }: { controls: React.RefObject<Controls> }) {
       "position",
       new THREE.Float32BufferAttribute(
         pts.flatMap((p) => [p.x, p.y, p.z]),
-        3
-      )
+        3,
+      ),
     );
     return g;
   }, [pts]);
@@ -98,18 +98,18 @@ function Structure({ controls }: { controls: React.RefObject<Controls> }) {
         speed: 0.25 + Math.random() * 0.5,
         amber: Math.random() > 0.7,
       })),
-    [edges.length]
+    [edges.length],
   );
 
   const signalGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute(
       "position",
-      new THREE.BufferAttribute(new Float32Array(SIGNALS * 3), 3)
+      new THREE.BufferAttribute(new Float32Array(SIGNALS * 3), 3),
     );
     g.setAttribute(
       "color",
-      new THREE.BufferAttribute(new Float32Array(SIGNALS * 3), 3)
+      new THREE.BufferAttribute(new Float32Array(SIGNALS * 3), 3),
     );
     return g;
   }, []);
@@ -150,7 +150,8 @@ function Structure({ controls }: { controls: React.RefObject<Controls> }) {
 
     // node breathing + wiring flicker
     if (nodeMat.current)
-      nodeMat.current.size = 0.1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.02;
+      nodeMat.current.size =
+        0.1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.02;
     if (lineMat.current)
       lineMat.current.opacity =
         0.42 + Math.sin(state.clock.elapsedTime * 0.9) * 0.12;
@@ -213,9 +214,14 @@ function Structure({ controls }: { controls: React.RefObject<Controls> }) {
       {/* globe lat/long shell */}
       <mesh>
         <sphereGeometry args={[GLOBE_R * 0.985, 24, 16]} />
-        <meshBasicMaterial color="#1f4e76" wireframe transparent opacity={0.22} />
+        <meshBasicMaterial
+          color="#1f4e76"
+          wireframe
+          transparent
+          opacity={0.22}
+        />
       </mesh>
-      {/* opaque inner fill — occludes back-face wiring */}
+      {/* opaque inner fill - occludes back-face wiring */}
       <mesh>
         <sphereGeometry args={[GLOBE_R * 0.93, 32, 24]} />
         <meshBasicMaterial color="#070d1c" transparent opacity={0.78} />
@@ -300,7 +306,12 @@ export default function WireframeScene({ onOpen }: { onOpen?: () => void }) {
     c.vx = 0;
     c.lastX = e.clientX;
     c.lastY = e.clientY;
-    tap.current = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false };
+    tap.current = {
+      x: e.clientX,
+      y: e.clientY,
+      t: performance.now(),
+      moved: false,
+    };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
   const onMove = (e: React.PointerEvent) => {

@@ -51,7 +51,7 @@ export default function OpenSource() {
       <SectionHeader
         index="03"
         title="OPEN-SOURCE SIGNALS"
-        caption="Public work on GitHub — built in the open, validated by stars."
+        caption="Public work on GitHub - built in the open, validated by stars."
       />
 
       {/* stat bar */}
@@ -80,7 +80,9 @@ export default function OpenSource() {
           </div>
           <div className="tech-label mt-1 flex items-center gap-1">
             VIEW PROFILE
-            <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+            <span className="transition-transform group-hover:translate-x-0.5">
+              ↗
+            </span>
           </div>
         </a>
       </div>

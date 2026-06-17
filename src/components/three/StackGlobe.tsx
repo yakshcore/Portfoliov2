@@ -8,7 +8,7 @@ import type { StackLayer } from "@/data/portfolio";
 
 const R = 3;
 const LAT_MAX = (60 * Math.PI) / 180;
-const BASE_TILT = 0.5; // ~28° — keeps every band (incl. the equator) readable
+const BASE_TILT = 0.5; // ~28° - keeps every band (incl. the equator) readable
 const DRAG_SENS = 3.2; // how strongly a swipe spins the globe
 const IDLE_SPIN = 0.1; // baseline auto-spin (rad/s)
 const X_CLAMP = 1.3; // keep tilt from flipping the globe upside-down
@@ -23,7 +23,7 @@ function layerLatitude(i: number, n: number) {
 const DIM = new THREE.Color("#244b6e");
 const HL = new THREE.Color("#eaffff"); // hovered-node highlight
 
-// shared drag state — fed by pointer handlers in the overlay
+// shared drag state - fed by pointer handlers in the overlay
 export type GlobeControls = {
   dragging: boolean;
   vy: number;
@@ -58,9 +58,9 @@ function Globe({
   const accentColors = useMemo(
     () =>
       layers.map(
-        (L) => new THREE.Color(L.accent === "amber" ? "#ffcb6b" : "#7fe0ff")
+        (L) => new THREE.Color(L.accent === "amber" ? "#ffcb6b" : "#7fe0ff"),
       ),
-    [layers]
+    [layers],
   );
 
   // build node clusters per layer (latitude bands)
@@ -75,7 +75,7 @@ function Globe({
       for (let k = 0; k < m; k++) {
         const theta = (k / m) * Math.PI * 2 + i * 0.55;
         ring.push(
-          new THREE.Vector3(rr * Math.cos(theta), y, rr * Math.sin(theta))
+          new THREE.Vector3(rr * Math.cos(theta), y, rr * Math.sin(theta)),
         );
       }
       layered.push(ring);
@@ -89,7 +89,7 @@ function Globe({
         flat.push(p);
         nodeLayer.push(i);
         nodeItem.push(k);
-      })
+      }),
     );
 
     // spine: connect each node to the angular-nearest node one band up
@@ -121,12 +121,12 @@ function Globe({
           "position",
           new THREE.Float32BufferAttribute(
             ring.flatMap((p) => [p.x, p.y, p.z]),
-            3
-          )
+            3,
+          ),
         );
         return g;
       }),
-    [built]
+    [built],
   );
 
   const nodeGeo = useMemo(() => {
@@ -135,8 +135,8 @@ function Globe({
       "position",
       new THREE.Float32BufferAttribute(
         built.flat.flatMap((p) => [p.x, p.y, p.z]),
-        3
-      )
+        3,
+      ),
     );
     const colors = new Float32Array(built.flat.length * 3);
     for (let i = 0; i < built.flat.length; i++) {
@@ -152,7 +152,7 @@ function Globe({
     const g = new THREE.BufferGeometry();
     g.setAttribute(
       "position",
-      new THREE.Float32BufferAttribute(built.spine, 3)
+      new THREE.Float32BufferAttribute(built.spine, 3),
     );
     return g;
   }, [built]);
@@ -168,11 +168,15 @@ function Globe({
     const dt = Math.max(delta, 0.001);
 
     if (c && c.dragging) {
-      // user is spinning it — apply the swipe directly and derive momentum
+      // user is spinning it - apply the swipe directly and derive momentum
       const ry = (c.accumDX / w) * DRAG_SENS;
       const rx = (c.accumDY / w) * DRAG_SENS;
       g.rotation.y += ry; // free 360° horizontally
-      g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + rx, -X_CLAMP, X_CLAMP);
+      g.rotation.x = THREE.MathUtils.clamp(
+        g.rotation.x + rx,
+        -X_CLAMP,
+        X_CLAMP,
+      );
       c.vy = ry / dt;
       c.vx = rx / dt;
       c.accumDX = 0;
@@ -265,7 +269,7 @@ function Globe({
         </lineLoop>
       ))}
 
-      {/* nodes — depthTest off so highlighted layers show their full ring */}
+      {/* nodes - depthTest off so highlighted layers show their full ring */}
       <points geometry={nodeGeo} renderOrder={3}>
         <pointsMaterial
           ref={nodeMat}
@@ -296,7 +300,12 @@ function Globe({
       {/* faint shell + inner fill for depth */}
       <mesh renderOrder={0}>
         <sphereGeometry args={[R * 0.985, 28, 18]} />
-        <meshBasicMaterial color="#163152" wireframe transparent opacity={0.14} />
+        <meshBasicMaterial
+          color="#163152"
+          wireframe
+          transparent
+          opacity={0.14}
+        />
       </mesh>
       <mesh renderOrder={-1}>
         <sphereGeometry args={[R * 0.92, 32, 24]} />

@@ -5,14 +5,14 @@ import { sound } from "@/lib/sound";
 import { scrollToSection } from "@/lib/lenis";
 import { NAV_SECTIONS as SECTIONS } from "@/lib/sections";
 
-// the navigation IS the depth axis — each section is a station at its true
+// the navigation IS the depth axis - each section is a station at its true
 // scroll depth, so spacing itself reads as a schematic of the descent.
 type Pt = { id: string; label: string; frac: number };
 
 export default function DepthNav() {
   const [progress, setProgress] = useState(0);
   const [pts, setPts] = useState<Pt[]>(() =>
-    SECTIONS.map((s, i) => ({ ...s, frac: (i + 1) / (SECTIONS.length + 1) }))
+    SECTIONS.map((s, i) => ({ ...s, frac: (i + 1) / (SECTIONS.length + 1) })),
   );
 
   useEffect(() => {
@@ -22,11 +22,9 @@ export default function DepthNav() {
       setPts(
         SECTIONS.map((s) => {
           const el = document.getElementById(s.id);
-          const top = el
-            ? el.getBoundingClientRect().top + window.scrollY
-            : 0;
+          const top = el ? el.getBoundingClientRect().top + window.scrollY : 0;
           return { ...s, frac: Math.max(0, Math.min(1, top / denom)) };
-        })
+        }),
       );
     };
     const onScroll = () => {

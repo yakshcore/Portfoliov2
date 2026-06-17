@@ -5,7 +5,7 @@ import { getLenis } from "@/lib/lenis";
 import { NAV_SECTIONS } from "@/lib/sections";
 
 // Proximity scroll-snap: once scrolling settles, if we've come to rest near a
-// section "station" we ease onto it via Lenis — magnetic, not mandatory, so you
+// section "station" we ease onto it via Lenis - magnetic, not mandatory, so you
 // can still stop mid-section when you're not close to a point.
 const SETTLE_MS = 150; // quiet time before we consider snapping
 const SNAP_WINDOW = 0.38; // only snap if within this fraction of viewport height
@@ -13,7 +13,9 @@ const MIN_DELTA = 4; // ignore if we're already basically on the point
 
 export default function ScrollSnap() {
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduce) return;
 
     let settle: ReturnType<typeof setTimeout>;

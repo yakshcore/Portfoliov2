@@ -46,7 +46,7 @@ export default function Operations() {
       ref={ref}
       className="relative mx-auto max-w-6xl px-6 py-24 md:px-10"
     >
-      {/* operating philosophy — the myth */}
+      {/* operating philosophy - the myth */}
       <div className="max-w-3xl">
         <div className="tech-label mb-7 flex items-center gap-3 text-cyan">
           <span className="h-px w-8 bg-cyan" />
@@ -66,7 +66,7 @@ export default function Operations() {
         ))}
       </div>
 
-      {/* current operations — live status */}
+      {/* current operations - live status */}
       <div className="op-grid mt-16">
         <div className="tech-label mb-5 flex items-center gap-3">
           CURRENT OPERATIONS

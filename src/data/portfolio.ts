@@ -1,5 +1,5 @@
 // ============================================================
-// CONTENT DATA LAYER — single source of truth
+// CONTENT DATA LAYER - single source of truth
 // Sourced from Yaksh Bambhroliya's CV
 // ============================================================
 
@@ -7,7 +7,7 @@ export const identity = {
   name: "Yaksh Bambhroliya",
   callsign: "YAKSH-CORE",
   role: "Independent Systems Architect",
-  // cycled in the hero typewriter — reinforces the narrative
+  // cycled in the hero typewriter - reinforces the narrative
   roleFramings: [
     "Independent Systems Architect",
     "Builder of Production Systems",
@@ -19,7 +19,7 @@ export const identity = {
   phone: "+91 97257 83139",
   tagline: "I architect and ship production systems end-to-end.",
   summary:
-    "Full-Stack Developer with 2 years of experience specialising in MERN-stack applications, AI/LLM integrations, and cloud-native deployments on AWS & GCP. Proven track record of independently architecting and shipping production systems — from visa CRM platforms to AI-powered food-tech products — with hands-on ownership across system design, microservices, CI/CD pipelines, and performance optimisation.",
+    "Full-Stack Developer with 2 years of experience specialising in MERN-stack applications, AI/LLM integrations, and cloud-native deployments on AWS & GCP. Proven track record of independently architecting and shipping production systems - from visa CRM platforms to AI-powered food-tech products - with hands-on ownership across system design, microservices, CI/CD pipelines, and performance optimisation.",
   links: {
     github: "https://github.com/yakshcore",
     linkedin: "https://linkedin.com/in/yaksh-bambhroliya",
@@ -28,7 +28,7 @@ export const identity = {
 };
 
 // ------------------------------------------------------------
-// Architecture node graph type — drives the self-drawing diagrams
+// Architecture node graph type - drives the self-drawing diagrams
 // coords are on a 0..100 viewbox (percent), edges reference node ids
 // ------------------------------------------------------------
 export type DiagramNode = {
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     year: "2026",
     classification: "VISA CRM PLATFORM",
     summary:
-      "A full-stack visa CRM managing 100+ active applications with passwordless OTP auth, a real-time status pipeline, and secure document delivery. Architected and deployed end-to-end — cutting manual case-tracking effort by ~60%.",
+      "A full-stack visa CRM managing 100+ active applications with passwordless OTP auth, a real-time status pipeline, and secure document delivery. Architected and deployed end-to-end - cutting manual case-tracking effort by ~60%.",
     stack: ["Next.js", "Node.js", "MongoDB", "Cloudinary", "OTP Auth"],
     metrics: [
       { value: "100+", label: "active cases" },
@@ -151,7 +151,7 @@ export const projects: Project[] = [
     year: "2025",
     classification: "AI FOOD-TECH ENGINE",
     summary:
-      "Led end-to-end development of an AI-powered meal-planning & restaurant platform — 30+ restaurants, 435+ menu items, real-time order tracking. SSR/ISR improved load performance ~40%; Gemini & Claude drive 3+ recommendation flows.",
+      "Led end-to-end development of an AI-powered meal-planning & restaurant platform - 30+ restaurants, 435+ menu items, real-time order tracking. SSR/ISR improved load performance ~40%; Gemini & Claude drive 3+ recommendation flows.",
     stack: [
       "Next.js",
       "React",
@@ -252,7 +252,7 @@ export const projects: Project[] = [
     year: "2025",
     classification: "SOCIAL GAMING NETWORK",
     summary:
-      "A scalable social gaming platform — discover games, build collections, follow gamers, and open real-time encrypted chats. 200+ registered users, 1,000+ collections. Web + Android via Capacitor, deployed on Google Cloud.",
+      "A scalable social gaming platform - discover games, build collections, follow gamers, and open real-time encrypted chats. 200+ registered users, 1,000+ collections. Web + Android via Capacitor, deployed on Google Cloud.",
     stack: [
       "Next.js",
       "TypeScript",
@@ -349,7 +349,7 @@ export const experience: ExperienceEntry[] = [
     role: "Freelance Full-Stack Developer",
     company: "Obscur Labs",
     mode: "Remote",
-    period: "Feb 2026 — Present",
+    period: "Feb 2026 - Present",
     points: [
       "Built Pravasa Transworld, a full-stack visa CRM with passwordless OTP auth, real-time status pipeline, and Cloudinary document delivery.",
       "Architected & deployed the full system, reducing manual case-tracking effort ~60%.",
@@ -359,7 +359,7 @@ export const experience: ExperienceEntry[] = [
     role: "MERN Stack Developer",
     company: "Techsture Technologies Pvt. Ltd.",
     mode: "On-site",
-    period: "Apr 2025 — Jan 2026",
+    period: "Apr 2025 - Jan 2026",
     points: [
       "Led end-to-end development of an AI-powered meal-planning platform.",
       "Next.js/React/Node/MongoDB/AWS; SSR/ISR improved load ~40%; RBAC, microservices, 10+ components.",
@@ -370,11 +370,11 @@ export const experience: ExperienceEntry[] = [
     role: "Full-Stack Developer",
     company: "Swiftrut Technologies Pvt. Ltd.",
     mode: "Remote",
-    period: "Mar 2024 — Feb 2025",
+    period: "Mar 2024 - Feb 2025",
     points: [
       "Built & deployed on Google Cloud, Redis, Supabase, WebSockets, microservices, n8n automation.",
       "Implemented RBAC and integrated Twilio, Nodemailer, and video APIs for real-time features.",
-      "Shipped backend & cloud across 2 production platforms — supporting 500+ concurrent users via WebSockets.",
+      "Shipped backend & cloud across 2 production platforms - supporting 500+ concurrent users via WebSockets.",
     ],
   },
 ];
@@ -421,7 +421,7 @@ export const skillGroups: { group: string; items: string[] }[] = [
 ];
 
 // ------------------------------------------------------------
-// THE STACK — scroll-story descended from the hero globe.
+// THE STACK - scroll-story descended from the hero globe.
 // Tap the globe → it opens fullscreen and walks these layers,
 // each one lighting up its own constellation of nodes.
 // Ordered foundation → frontier (core language up to blockchain).
@@ -442,14 +442,14 @@ export const stackStory: {
   layers: StackLayer[];
 } = {
   title: "THE STACK",
-  line: "Seven layers, one operator. Descend the system I build with — from raw language at the core to the decentralized frontier I'm pushing into now.",
+  line: "Seven layers, one operator. Descend the system I build with - from raw language at the core to the decentralized frontier I'm pushing into now.",
   layers: [
     {
       code: "L1",
       role: "FOUNDATION",
       title: "Language Core",
       narrative:
-        "Every system I ship starts here — typed, strict, predictable. The bedrock the whole stack stands on.",
+        "Every system I ship starts here - typed, strict, predictable. The bedrock the whole stack stands on.",
       items: ["TypeScript", "JavaScript (ES6+)"],
       accent: "cyan",
       status: "LIVE",
@@ -459,7 +459,7 @@ export const stackStory: {
       role: "INTERFACE",
       title: "What People Touch",
       narrative:
-        "The surface layer — fast, server-rendered, and built to feel alive. Where engineering meets the eye.",
+        "The surface layer - fast, server-rendered, and built to feel alive. Where engineering meets the eye.",
       items: [
         "React.js",
         "Next.js (SSR/ISR)",
@@ -475,7 +475,7 @@ export const stackStory: {
       role: "SERVICES",
       title: "The Logic Layer",
       narrative:
-        "Where the rules live — APIs, sockets, and microservices wired for real-time and locked down with RBAC.",
+        "Where the rules live - APIs, sockets, and microservices wired for real-time and locked down with RBAC.",
       items: [
         "Node.js",
         "Express.js",
@@ -493,7 +493,7 @@ export const stackStory: {
       role: "PERSISTENCE",
       title: "State That Survives",
       narrative:
-        "Memory for the system — documents, caches, and graphs that hold the truth between requests.",
+        "Memory for the system - documents, caches, and graphs that hold the truth between requests.",
       items: ["MongoDB", "Redis", "Supabase", "Firebase", "Neo4j"],
       accent: "cyan",
       status: "LIVE",
@@ -503,7 +503,7 @@ export const stackStory: {
       role: "INFRASTRUCTURE",
       title: "Where It Runs",
       narrative:
-        "Containers, pipelines, and cloud — shipped end-to-end so deploys are boring and uptime isn't.",
+        "Containers, pipelines, and cloud - shipped end-to-end so deploys are boring and uptime isn't.",
       items: ["AWS (EC2/S3/IAM)", "Google Cloud", "Docker", "CI/CD", "Nginx"],
       accent: "cyan",
       status: "LIVE",
@@ -513,7 +513,7 @@ export const stackStory: {
       role: "INTELLIGENCE",
       title: "Systems That Reason",
       narrative:
-        "LLMs and automation wired into the product — recommendation engines, agents, and pipelines that think.",
+        "LLMs and automation wired into the product - recommendation engines, agents, and pipelines that think.",
       items: ["Gemini API", "Claude API", "OpenAI API", "n8n"],
       accent: "amber",
       status: "LIVE",
@@ -523,7 +523,7 @@ export const stackStory: {
       role: "FRONTIER",
       title: "Frontier Systems",
       narrative:
-        "The emerging layer I'm researching now — decentralized infrastructure, autonomous agents, and trustless on-chain rails. New primitives, and the tooling that builds them.",
+        "The emerging layer I'm researching now - decentralized infrastructure, autonomous agents, and trustless on-chain rails. New primitives, and the tooling that builds them.",
       items: [
         "Decentralized Infra",
         "Autonomous Agents",
@@ -538,7 +538,7 @@ export const stackStory: {
 };
 
 // ------------------------------------------------------------
-// OPERATING PHILOSOPHY — the mantra. Surfaced as the opening beat
+// OPERATING PHILOSOPHY - the mantra. Surfaced as the opening beat
 // of the FIELD OPERATIONS section. Resume → philosophy.
 // ------------------------------------------------------------
 export const manifesto = [
@@ -548,8 +548,8 @@ export const manifesto = [
 ];
 
 // ------------------------------------------------------------
-// FIELD OPERATIONS — what the operator is running *right now*.
-// Live status, not work history — reinforces "actively building".
+// FIELD OPERATIONS - what the operator is running *right now*.
+// Live status, not work history - reinforces "actively building".
 // ------------------------------------------------------------
 export type Operation = {
   name: string;
@@ -560,12 +560,12 @@ export type Operation = {
 export const operations: Operation[] = [
   {
     name: "Portfolio v2",
-    detail: "This system — WebGL globe, live telemetry, scroll-story.",
+    detail: "This system - WebGL globe, live telemetry, scroll-story.",
     status: "ACTIVE",
   },
   {
     name: "Decentralized Infrastructure",
-    detail: "Smart contracts, EVM, and Web3 rails — going deep.",
+    detail: "Smart contracts, EVM, and Web3 rails - going deep.",
     status: "RESEARCH",
   },
   {
@@ -577,7 +577,7 @@ export const operations: Operation[] = [
 
 export const achievements: { title: string; org: string; date: string }[] = [
   {
-    title: "1st Runner-Up — Prompt Wars",
+    title: "1st Runner-Up - Prompt Wars",
     org: "H2S Google India",
     date: "May 2026",
   },
@@ -597,7 +597,7 @@ export const systemStats = [
 ];
 
 // ------------------------------------------------------------
-// OPEN-SOURCE SIGNALS — pulled from github.com/yakshcore
+// OPEN-SOURCE SIGNALS - pulled from github.com/yakshcore
 // Social proof: real repos, real stars
 // ------------------------------------------------------------
 export const github = {
@@ -620,7 +620,7 @@ export type Repo = {
 export const repos: Repo[] = [
   {
     name: "Gamers-Era",
-    desc: "Full-stack social platform — bookmark games, build collections, connect with players.",
+    desc: "Full-stack social platform - bookmark games, build collections, connect with players.",
     lang: "TypeScript",
     stars: 33,
     url: "https://github.com/yakshcore/Gamers-Era",
@@ -628,7 +628,7 @@ export const repos: Repo[] = [
   },
   {
     name: "Solar-System-Explorer",
-    desc: "3D web experience — explore planets with realistic orbits, time controls, and smooth camera.",
+    desc: "3D web experience - explore planets with realistic orbits, time controls, and smooth camera.",
     lang: "TypeScript",
     stars: 23,
     url: "https://github.com/yakshcore/Solar-System-Explorer",
@@ -644,7 +644,7 @@ export const repos: Repo[] = [
   },
   {
     name: "LeadHunter-AI",
-    desc: "AI-driven lead qualification & automation — Node, MongoDB, n8n, OpenAI.",
+    desc: "AI-driven lead qualification & automation - Node, MongoDB, n8n, OpenAI.",
     lang: "JavaScript",
     stars: 2,
     url: "https://github.com/yakshcore/LeadHunter-AI",
@@ -652,7 +652,7 @@ export const repos: Repo[] = [
   },
   {
     name: "intelgraph",
-    desc: "AI-powered investigation tool — builds timelines, connections & insights from internet data.",
+    desc: "AI-powered investigation tool - builds timelines, connections & insights from internet data.",
     lang: "TypeScript",
     stars: 0,
     url: "https://github.com/yakshcore/intelgraph",

@@ -70,7 +70,9 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
               style={{
                 backgroundColor: STATUS_COLOR[status],
                 boxShadow:
-                  status === "ONLINE" ? `0 0 8px ${STATUS_COLOR[status]}` : "none",
+                  status === "ONLINE"
+                    ? `0 0 8px ${STATUS_COLOR[status]}`
+                    : "none",
               }}
             />
             <span
@@ -132,7 +134,7 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
       {/* diagram */}
       <div className={`proj-reveal ${reverse ? "lg:order-1" : ""}`}>
         <div className="tech-label mb-3 flex items-center justify-between">
-          <span>FIG.{i + 1} — SYSTEM ARCHITECTURE</span>
+          <span>FIG.{i + 1} - SYSTEM ARCHITECTURE</span>
           <span style={{ color: STATUS_COLOR[status] }}>
             {status === "ONLINE"
               ? "● STREAMING"
@@ -153,8 +155,15 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
 
 export default function Projects() {
   return (
-    <section id="systems" className="relative mx-auto max-w-6xl px-6 py-24 md:px-10">
-      <SectionHeader index="02" title="DEPLOYED SYSTEMS" caption="Self-assembling architecture schematics — drawn as you read." />
+    <section
+      id="systems"
+      className="relative mx-auto max-w-6xl px-6 py-24 md:px-10"
+    >
+      <SectionHeader
+        index="02"
+        title="DEPLOYED SYSTEMS"
+        caption="Self-assembling architecture schematics - drawn as you read."
+      />
       <div>
         {projects.map((p, i) => (
           <ProjectBlock key={p.id} project={p} i={i} />

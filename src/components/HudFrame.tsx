@@ -23,13 +23,13 @@ export default function HudFrame() {
   const [load, setLoad] = useState(34);
 
   useEffect(() => {
-    // live clock — updates every second
+    // live clock - updates every second
     const tick = () => {
       const d = new Date();
       setClock(
         [d.getHours(), d.getMinutes(), d.getSeconds()]
           .map((n) => String(n).padStart(2, "0"))
-          .join(":")
+          .join(":"),
       );
     };
     tick();

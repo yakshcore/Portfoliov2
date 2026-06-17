@@ -9,7 +9,7 @@ import Typewriter from "@/components/Typewriter";
 
 const HeroStackGlobe = dynamic(
   () => import("@/components/three/HeroStackGlobe"),
-  { ssr: false }
+  { ssr: false },
 );
 const StackStory = dynamic(() => import("@/components/StackStory"), {
   ssr: false,
@@ -24,7 +24,7 @@ export default function Hero({ started }: { started: boolean }) {
   const globeWrap = useRef<HTMLDivElement>(null);
   const [storyOpen, setStoryOpen] = useState(false);
 
-  // furthest stack layer the visitor has mapped — the hero globe renders this
+  // furthest stack layer the visitor has mapped - the hero globe renders this
   // "completion" state, and it survives across visits via localStorage.
   const [reached, setReached] = useState(0);
   const reachedRef = useRef(0);
@@ -52,7 +52,7 @@ export default function Hero({ started }: { started: boolean }) {
 
   const complete = reached >= STACK_MAX;
 
-  // wipe progress so the globe returns to its incomplete state — ready to rebuild
+  // wipe progress so the globe returns to its incomplete state - ready to rebuild
   const handleReset = () => {
     sound.play("blip");
     reachedRef.current = 0;
@@ -74,7 +74,7 @@ export default function Hero({ started }: { started: boolean }) {
       }).from(
         ".hero-globe",
         { opacity: 0, scale: 0.9, duration: 1.2, ease: "power2.out" },
-        0.2
+        0.2,
       );
     }, root);
     return () => ctx.revert();
@@ -144,7 +144,7 @@ export default function Hero({ started }: { started: boolean }) {
             </p>
             <p className="mt-3 text-sm leading-relaxed text-paper-dim">
               {identity.tagline} Two years architecting MERN and cloud-native
-              systems with deep AI/LLM integration — from visa CRMs to AI
+              systems with deep AI/LLM integration - from visa CRMs to AI
               food-tech.
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function Hero({ started }: { started: boolean }) {
               onOpen={() => setStoryOpen(true)}
             />
             <div className="pointer-events-none absolute inset-0 grid-vignette" />
-            {/* globe annotations — opposite corners so nothing overlaps */}
+            {/* globe annotations - opposite corners so nothing overlaps */}
             <div className="pointer-events-none absolute left-3 top-3 tech-label text-cyan/70">
               STACK GRAPH · {complete ? "COMPLETE" : "PARTIAL"}
             </div>
@@ -181,7 +181,7 @@ export default function Hero({ started }: { started: boolean }) {
               LAYER {String(reached + 1).padStart(2, "0")} /{" "}
               {String(STACK_LEN).padStart(2, "0")} MAPPED
             </div>
-            {/* double-tap affordance — bottom-center, clear of the corner labels */}
+            {/* double-tap affordance - bottom-center, clear of the corner labels */}
             <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap border border-cyan/30 bg-ink-900/70 px-3 py-1 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 sm:opacity-70">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan shadow-[0_0_8px_var(--cyan)]" />
               <span className="tech-label text-[0.55rem] text-cyan">
@@ -191,7 +191,7 @@ export default function Hero({ started }: { started: boolean }) {
               </span>
             </div>
 
-            {/* reset — appears once the globe is fully mapped */}
+            {/* reset - appears once the globe is fully mapped */}
             {complete && (
               <button
                 onClick={handleReset}

@@ -10,9 +10,21 @@ gsap.registerPlugin(ScrollTrigger);
 
 const CHANNELS = [
   { label: "EMAIL", value: identity.email, href: `mailto:${identity.email}` },
-  { label: "GITHUB", value: "github.com/yakshcore", href: identity.links.github },
-  { label: "LINKEDIN", value: "in/yaksh-bambhroliya", href: identity.links.linkedin },
-  { label: "PHONE", value: identity.phone, href: `tel:${identity.phone.replace(/\s/g, "")}` },
+  {
+    label: "GITHUB",
+    value: "github.com/yakshcore",
+    href: identity.links.github,
+  },
+  {
+    label: "LINKEDIN",
+    value: "in/yaksh-bambhroliya",
+    href: identity.links.linkedin,
+  },
+  {
+    label: "PHONE",
+    value: identity.phone,
+    href: `tel:${identity.phone.replace(/\s/g, "")}`,
+  },
 ];
 
 export default function Contact() {
@@ -74,7 +86,7 @@ export default function Contact() {
           </h3>
 
           <p className="contact-reveal mt-6 max-w-md text-sm leading-relaxed text-paper-dim">
-            Recruiters, founders, and clients — if you need someone who can
+            Recruiters, founders, and clients - if you need someone who can
             architect, build, and ship a production system end-to-end, the
             channel is open.
           </p>
@@ -84,7 +96,9 @@ export default function Contact() {
             className="contact-reveal group mt-8 inline-flex items-center gap-3 border border-cyan px-6 py-3 font-display text-sm font-semibold text-cyan transition-colors hover:bg-cyan hover:text-ink-900"
           >
             INITIATE TRANSMISSION
-            <span className="transition-transform group-hover:translate-x-1">→</span>
+            <span className="transition-transform group-hover:translate-x-1">
+              →
+            </span>
           </a>
         </div>
 
@@ -114,7 +128,9 @@ export default function Contact() {
 
       {/* footer */}
       <div className="mt-24 flex flex-wrap items-center justify-between gap-4 border-t border-line-faint pt-6 tech-label">
-        <span>© {new Date().getFullYear()} {identity.name.toUpperCase()}</span>
+        <span>
+          © {new Date().getFullYear()} {identity.name.toUpperCase()}
+        </span>
         <span>DRAWING NO. YB-2026 · END OF SCHEMATIC</span>
         <span className="text-cyan">UPLINK · STABLE</span>
       </div>

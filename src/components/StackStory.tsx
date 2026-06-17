@@ -27,7 +27,7 @@ export default function StackStory({
   const scroller = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   activeRef.current = active;
-  // furthest layer the visitor descends to — persisted onto the hero globe
+  // furthest layer the visitor descends to - persisted onto the hero globe
   const maxReached = useRef(0);
 
   // globe drag-rotate state + hovered-tag node
@@ -41,11 +41,23 @@ export default function StackStory({
     lastY: 0,
   });
   const hoverRef = useRef<HoverNode>(null);
-  const drag = useRef({ active: false, decided: false, rotating: false, x: 0, y: 0 });
+  const drag = useRef({
+    active: false,
+    decided: false,
+    rotating: false,
+    x: 0,
+    y: 0,
+  });
 
   // pointer on the scroller spins the globe; vertical touch still scrolls chapters
   const onGlobeDown = (e: React.PointerEvent) => {
-    drag.current = { active: true, decided: false, rotating: false, x: e.clientX, y: e.clientY };
+    drag.current = {
+      active: true,
+      decided: false,
+      rotating: false,
+      x: e.clientX,
+      y: e.clientY,
+    };
     controlsRef.current.lastX = e.clientX;
     controlsRef.current.lastY = e.clientY;
   };
@@ -147,12 +159,12 @@ export default function StackStory({
       }`}
       role="dialog"
       aria-modal="true"
-      aria-label="The Stack — system layers"
+      aria-label="The Stack - system layers"
     >
       <div className="pointer-events-none absolute inset-0 blueprint-grid opacity-50" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,var(--ink-900)_100%)]" />
 
-      {/* globe — fills the right on desktop, sits behind text on mobile */}
+      {/* globe - fills the right on desktop, sits behind text on mobile */}
       <div className="pointer-events-none absolute inset-y-0 right-0 w-full opacity-60 lg:w-[58%] lg:opacity-100">
         <StackGlobe
           layers={layers}
@@ -198,7 +210,9 @@ export default function StackStory({
           >
             <span
               className={`tech-label text-[0.55rem] transition-opacity ${
-                i === active ? "opacity-100 text-cyan" : "opacity-0 group-hover:opacity-60"
+                i === active
+                  ? "opacity-100 text-cyan"
+                  : "opacity-0 group-hover:opacity-60"
               }`}
             >
               {L.code}
@@ -208,8 +222,8 @@ export default function StackStory({
                 i === active
                   ? "scale-125 border-cyan bg-cyan shadow-[0_0_8px_var(--cyan)]"
                   : i < active
-                  ? "border-cyan/60 bg-cyan/50"
-                  : "border-line-dim bg-transparent"
+                    ? "border-cyan/60 bg-cyan/50"
+                    : "border-line-dim bg-transparent"
               }`}
             />
           </button>
@@ -248,7 +262,8 @@ export default function StackStory({
                     {L.code} · {L.role}
                   </span>
                   <span className="text-paper-dim/40">
-                    {String(i + 1).padStart(2, "0")} / {String(layers.length).padStart(2, "0")}
+                    {String(i + 1).padStart(2, "0")} /{" "}
+                    {String(layers.length).padStart(2, "0")}
                   </span>
                   {L.status === "EXPLORING" && (
                     <span className="flex items-center gap-1.5 border border-amber/40 px-2 py-0.5 text-[0.55rem] text-amber">
@@ -304,7 +319,9 @@ export default function StackStory({
       {/* scroll hint */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1.5">
         <span className="tech-label text-[0.55rem]">
-          {active < layers.length - 1 ? "SCROLL TO DESCEND" : "FRONTIER REACHED"}
+          {active < layers.length - 1
+            ? "SCROLL TO DESCEND"
+            : "FRONTIER REACHED"}
         </span>
         <span className="h-7 w-px animate-pulse bg-gradient-to-b from-cyan to-transparent" />
       </div>

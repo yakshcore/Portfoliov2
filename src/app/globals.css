@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   THE ARCHITECT'S BLUEPRINT — design system
+   THE ARCHITECT'S BLUEPRINT - design system
    Classic blueprint: ink-navy ground, cyan linework, amber active
    ============================================================ */
 
@@ -76,8 +76,16 @@ body {
     linear-gradient(90deg, var(--grid) 1px, transparent 1px),
     linear-gradient(var(--grid-strong) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
-  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
-  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  background-size:
+    24px 24px,
+    24px 24px,
+    120px 120px,
+    120px 120px;
+  background-position:
+    -1px -1px,
+    -1px -1px,
+    -1px -1px,
+    -1px -1px;
 }
 
 /* radial vignette so grid fades at edges */
@@ -151,7 +159,8 @@ body {
 
 /* node status dot pulse, only when online */
 @keyframes nodepulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -166,8 +175,14 @@ body {
 
 /* blinking cursor */
 @keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 .cursor-blink {
   animation: blink 1s step-end infinite;

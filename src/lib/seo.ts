@@ -1,16 +1,16 @@
 import { identity } from "@/data/portfolio";
 
 // Canonical origin. Set NEXT_PUBLIC_SITE_URL in the deploy env (Vercel etc.).
-// The fallback is a placeholder — replace it with the real production domain.
+// The fallback is a placeholder - replace it with the real production domain.
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://yakshbambhroliya.com"
 ).replace(/\/+$/, "");
 
-export const SITE_NAME = `${identity.name} — ${identity.role}`;
+export const SITE_NAME = `${identity.name} - ${identity.role}`;
 
 // kept tight (~150 chars) for SERP snippet; the full bio lives in JSON-LD
 export const SEO_DESCRIPTION =
-  "Yaksh Bambhroliya — full-stack developer architecting and shipping production systems end-to-end: MERN, AI/LLM integration, and cloud-native on AWS & GCP.";
+  "Yaksh Bambhroliya - full-stack developer architecting and shipping production systems end-to-end: MERN, AI/LLM integration, and cloud-native on AWS & GCP.";
 
 export const SEO_KEYWORDS = [
   "Yaksh Bambhroliya",

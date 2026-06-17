@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
-    template: `%s — ${identity.name}`,
+    template: `%s - ${identity.name}`,
   },
   description: SEO_DESCRIPTION,
   keywords: SEO_KEYWORDS,
@@ -85,7 +85,7 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full">
-        {/* structured data — Person + WebSite for rich results */}
+        {/* structured data - Person + WebSite for rich results */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }}

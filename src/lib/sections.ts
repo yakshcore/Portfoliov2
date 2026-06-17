@@ -1,4 +1,4 @@
-// single source of truth for the section "stations" — used by the depth-bar
+// single source of truth for the section "stations" - used by the depth-bar
 // navigation and the proximity scroll-snap.
 export const NAV_SECTIONS = [
   { id: "operations", label: "OPS" },

@@ -90,7 +90,7 @@ export default function HeroStackGlobe({
   const onUp = () => {
     const d = drag.current;
     if (d.rotating) controlsRef.current.dragging = false;
-    // double-tap to open (works for both touch and mouse) — never on a drag
+    // double-tap to open (works for both touch and mouse) - never on a drag
     if (!d.moved) {
       const now = performance.now();
       if (now - lastTap.current < 320) {

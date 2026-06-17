@@ -21,7 +21,7 @@ function timeAgo(ms: number) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-// returning-visitor memory — recognizes the operator across visits
+// returning-visitor memory - recognizes the operator across visits
 function buildLines() {
   const lines = [...BASE_LINES];
   let prev: { last?: number; count?: number } | null = null;
@@ -40,7 +40,7 @@ function buildLines() {
   try {
     localStorage.setItem(
       "yb-visit",
-      JSON.stringify({ last: Date.now(), count: (prev?.count || 0) + 1 })
+      JSON.stringify({ last: Date.now(), count: (prev?.count || 0) + 1 }),
     );
   } catch {}
 
@@ -57,7 +57,9 @@ export default function BootSequence({ onDone }: { onDone: () => void }) {
     const built = buildLines();
     setLines(built);
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduce) {
       onDone();
       return;
