@@ -127,6 +127,7 @@ export default function HeroStackGlobe({
         activeRef={reachedRef}
         controlsRef={controlsRef}
         hoverRef={hoverRef}
+        staticFrame
       />
     </div>
   );

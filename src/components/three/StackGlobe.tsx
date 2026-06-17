@@ -41,11 +41,13 @@ function Globe({
   activeRef,
   controlsRef,
   hoverRef,
+  staticFrame = false,
 }: {
   layers: StackLayer[];
   activeRef: React.RefObject<number>;
   controlsRef: React.RefObject<GlobeControls>;
   hoverRef: React.RefObject<HoverNode>;
+  staticFrame?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const nodeMat = useRef<THREE.PointsMaterial>(null);
@@ -185,7 +187,11 @@ function Globe({
       } else {
         g.rotation.y += IDLE_SPIN * delta;
       }
-      const targetX = layerLatitude(active, layers.length) + BASE_TILT;
+      // hero (staticFrame) keeps a fixed 3/4 tilt; the scroll-story reframes
+      // to bring each active layer band level with the camera.
+      const targetX = staticFrame
+        ? BASE_TILT
+        : layerLatitude(active, layers.length) + BASE_TILT;
       g.rotation.x += (targetX - g.rotation.x) * Math.min(1, delta * 1.6);
       g.rotation.x = THREE.MathUtils.clamp(g.rotation.x, -X_CLAMP, X_CLAMP);
     }
@@ -323,11 +329,13 @@ export default function StackGlobe({
   activeRef,
   controlsRef,
   hoverRef,
+  staticFrame = false,
 }: {
   layers: StackLayer[];
   activeRef: React.RefObject<number>;
   controlsRef: React.RefObject<GlobeControls>;
   hoverRef: React.RefObject<HoverNode>;
+  staticFrame?: boolean;
 }) {
   return (
     <Canvas
@@ -342,6 +350,7 @@ export default function StackGlobe({
           activeRef={activeRef}
           controlsRef={controlsRef}
           hoverRef={hoverRef}
+          staticFrame={staticFrame}
         />
         <EffectComposer>
           <Bloom
