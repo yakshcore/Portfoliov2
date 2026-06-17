@@ -4,7 +4,16 @@
 // Subtle, tasteful, off by default. Respects autoplay policy.
 // ============================================================
 
-type SoundName = "blip" | "hover" | "boot" | "online" | "sweep" | "toggle";
+type SoundName =
+  | "blip"
+  | "hover"
+  | "boot"
+  | "online"
+  | "sweep"
+  | "toggle"
+  | "meow"
+  | "chirp"
+  | "purr";
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -139,6 +148,60 @@ class SoundEngine {
         g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
         osc.start(t);
         osc.stop(t + 0.52);
+        break;
+      }
+      case "chirp":
+        // the cat noticing you - a quick rising trill
+        tone(1400, 0.05, "sine", 0.06);
+        tone(1950, 0.06, "sine", 0.05, 0, 0.05);
+        break;
+      case "meow": {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.value = 900;
+        filter.Q.value = 4;
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(560, t);
+        osc.frequency.linearRampToValueAtTime(880, t + 0.12);
+        osc.frequency.linearRampToValueAtTime(700, t + 0.3);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(this.master);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.11, t + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+        osc.start(t);
+        osc.stop(t + 0.36);
+        break;
+      }
+      case "purr": {
+        // short low rumble with tremolo - replayed while being pet
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        const trem = ctx.createOscillator();
+        const tremG = ctx.createGain();
+        filter.type = "lowpass";
+        filter.frequency.value = 220;
+        osc.type = "sawtooth";
+        osc.frequency.value = 55;
+        trem.type = "sine";
+        trem.frequency.value = 26;
+        tremG.gain.value = 0.04;
+        trem.connect(tremG);
+        tremG.connect(g.gain);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(this.master);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.06, t + 0.06);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+        osc.start(t);
+        trem.start(t);
+        osc.stop(t + 0.52);
+        trem.stop(t + 0.52);
         break;
       }
     }
