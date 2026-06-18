@@ -66,6 +66,15 @@ export default function Contact() {
     sendCat({ type: "act", name: act });
     setMenu(null);
   };
+  // touch long-press opens the command menu (no right-click on mobile)
+  const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lpStart = useRef<{ x: number; y: number } | null>(null);
+  const clearLP = () => {
+    if (lpTimer.current) {
+      clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     const el = ref.current;
@@ -183,6 +192,27 @@ export default function Contact() {
               e.preventDefault();
               setMenu({ x: e.clientX, y: e.clientY });
             }}
+            onPointerDown={(e) => {
+              if (e.pointerType === "mouse") return;
+              lpStart.current = { x: e.clientX, y: e.clientY };
+              clearLP();
+              lpTimer.current = setTimeout(
+                () => setMenu({ x: e.clientX, y: e.clientY }),
+                480,
+              );
+            }}
+            onPointerMove={(e) => {
+              if (
+                lpStart.current &&
+                Math.hypot(
+                  e.clientX - lpStart.current.x,
+                  e.clientY - lpStart.current.y,
+                ) > 12
+              )
+                clearLP();
+            }}
+            onPointerUp={clearLP}
+            onPointerCancel={clearLP}
           >
             <CatField onMood={setMood} onThought={showThought} />
             <div className="pointer-events-none absolute left-3 top-3 leading-tight">
@@ -195,7 +225,7 @@ export default function Contact() {
               </div>
             )}
             <div className="pointer-events-none absolute bottom-3 right-3 tech-label text-[0.5rem] text-paper-dim/40">
-              PET · CLICK TO PLAY · RIGHT-CLICK NYX
+              TAP TO PET · DRAG TO PLAY · HOLD / RIGHT-CLICK
             </div>
           </div>
         </div>

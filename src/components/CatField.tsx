@@ -75,7 +75,11 @@ export default function CatField({
 
     const P = { x: -9999, y: -9999, inside: false, px: -9999, py: -9999, spd: 0 };
     let lastActivity = performance.now();
-    let clickPending: { x: number; y: number } | null = null;
+    let tapAt: { x: number; y: number } | null = null;
+    let petPulse = 0;
+    let tap: { x: number; y: number; t: number; moved: boolean } | null = null;
+    const prints: { x: number; y: number; life: number }[] = [];
+    let lastPrint = { x: -9999, y: -9999 };
 
     const setPos = (e: PointerEvent) => {
       const r = box.getBoundingClientRect();
@@ -84,18 +88,33 @@ export default function CatField({
       P.inside = true;
       lastActivity = performance.now();
     };
-    const onMove = (e: PointerEvent) => setPos(e);
-    const onDown = (e: PointerEvent) => {
-      if (e.button === 2) return; // right-click is the menu, not a toy throw
+    const onMove = (e: PointerEvent) => {
       setPos(e);
-      clickPending = { x: P.x, y: P.y };
+      if (tap && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 8)
+        tap.moved = true;
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.button === 2) return; // right-click / long-press handled by the menu
+      setPos(e);
+      tap = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false };
+    };
+    // a quick, still tap = pet (near her) or throw a toy (away). holds/drags don't.
+    const onUp = (e: PointerEvent) => {
+      if (tap && !tap.moved && performance.now() - tap.t < 350) {
+        const r = box.getBoundingClientRect();
+        tapAt = { x: e.clientX - r.left, y: e.clientY - r.top };
+      }
+      tap = null;
     };
     const onLeave = () => {
       P.inside = false;
+      tap = null;
     };
     box.addEventListener("pointermove", onMove);
     box.addEventListener("pointerdown", onDown);
+    box.addEventListener("pointerup", onUp);
     box.addEventListener("pointerleave", onLeave);
+    box.addEventListener("pointercancel", onLeave);
 
     let running = true;
     const io = new IntersectionObserver(([e]) => (running = e.isIntersecting), {
@@ -111,6 +130,7 @@ export default function CatField({
       asleep: 0,
       trust: 0,
       dizzy: 0,
+      pounce: 0,
       lookx: 0,
       looky: 0,
       leanx: 0,
@@ -141,6 +161,17 @@ export default function CatField({
     let treatT = 0;
     let napUntil = 0;
     const ROLL_DUR = 0.85;
+    // wander position (she ambles around / walks to the ball)
+    let wx = -1;
+    let wy = -1;
+    let wtx = 0;
+    let wty = 0;
+    let wanderT = 4 + Math.random() * 5;
+    let hopClock = 0;
+    let hopAmt = 0; // eased "is moving" -> drives the hop arc
+    let lungeT = 0;
+    let lungeDX = 0;
+    let lungeDY = 0;
 
     const onSignal = (s: CatSignal) => {
       const t = performance.now();
@@ -206,23 +237,70 @@ export default function CatField({
         trustFired = true;
         thoughtCb.current?.("trust established");
       }
+      // wander: walk to the ball if chasing, else amble to a random spot when idle
+      if (wx < 0) {
+        wx = W / 2;
+        wy = H * 0.56;
+        wtx = wx;
+        wty = wy;
+      }
+      if (ball) {
+        wtx = Math.max(W * 0.2, Math.min(W * 0.8, ball.x));
+        wty = Math.max(H * 0.44, Math.min(H * 0.64, ball.y));
+      } else {
+        const idleWander =
+          !P.inside && toys.length === 0 && napUntil < now && S.dizzy < 0.2;
+        wanderT -= dt;
+        if (idleWander && wanderT <= 0) {
+          wanderT = 9 + Math.random() * 8;
+          wtx = W * (0.3 + Math.random() * 0.4);
+          wty = H * (0.46 + Math.random() * 0.14);
+        } else if (!idleWander) {
+          wtx = wx;
+          wty = wy;
+        }
+      }
+      const followRate = ball ? 2.6 : 1.6;
+      wx = ease(wx, wtx, followRate, dt);
+      wy = ease(wy, wty, followRate, dt);
+
       const size = Math.min(W * 0.5, H * 0.9);
       const headR = size * 0.22 * (1 + S.trust * 0.12);
-      const baseX = W / 2;
-      const baseY = H * 0.56 + S.trust * headR * 0.2;
+
+      // hop instead of slide: bunny-hop arcs while travelling, squash on landing
+      const moving = Math.hypot(wtx - wx, wty - wy) > headR * 0.12;
+      hopAmt = ease(hopAmt, moving ? 1 : 0, 5, dt);
+      if (moving) hopClock += dt;
+      else hopClock = 0;
+      const HOP_T = 0.42;
+      const hphase = (hopClock % HOP_T) / HOP_T;
+      const hopLift = Math.sin(hphase * Math.PI) * headR * 0.5 * hopAmt;
+      const landSquash = (1 - Math.sin(hphase * Math.PI)) * hopAmt;
+
+      // lunge thrust toward the ball when she swats (set in the bat below)
+      if (lungeT > 0) lungeT = Math.max(0, lungeT - dt);
+      const lungeP = lungeT > 0 ? Math.sin((lungeT / 0.32) * Math.PI) : 0;
+
+      const baseX = wx + lungeDX * lungeP * headR * 0.5;
+      const baseY =
+        wy + S.trust * headR * 0.2 - hopLift + lungeDY * lungeP * headR * 0.5;
       const breathe = Math.sin(time * (S.asleep > 0.5 ? 0.9 : 1.6)) * headR * 0.02;
       const hx = baseX + S.leanx;
       const hy = baseY - headR * 0.55 + S.leany + breathe;
 
-      // consume a click: far from the cat = throw a toy, near = a pet
-      if (clickPending) {
-        const cd = Math.hypot(clickPending.x - hx, clickPending.y - hy);
+      // consume a tap: far from the cat = throw a toy, near = a pet
+      if (tapAt) {
+        const cd = Math.hypot(tapAt.x - hx, tapAt.y - hy);
         if (cd > headR * 1.7) {
-          toys.push({ x: clickPending.x, y: clickPending.y, life: 1 });
+          toys.push({ x: tapAt.x, y: tapAt.y, life: 1 });
           sound.play("chirp");
+        } else {
+          petPulse = 1.2;
+          sound.play("purr");
         }
-        clickPending = null;
+        tapAt = null;
       }
+      if (petPulse > 0) petPulse = Math.max(0, petPulse - dt);
       // ball physics (thrown from the right-click menu) - bounces, she bats it
       if (ball) {
         ball.life -= dt;
@@ -236,11 +314,14 @@ export default function CatField({
         if (ball.y < m) { ball.y = m; ball.vy = Math.abs(ball.vy); }
         if (ball.y > H - m) { ball.y = H - m; ball.vy = -Math.abs(ball.vy); }
         const pawZoneY = hy + headR * 1.2;
-        if (Math.hypot(ball.x - hx, ball.y - pawZoneY) < headR * 0.85) {
+        if (lungeT <= 0 && Math.hypot(ball.x - hx, ball.y - pawZoneY) < headR * 0.95) {
           const ang = Math.atan2(ball.y - pawZoneY, ball.x - hx);
           ball.vx = Math.cos(ang) * 320 + (Math.random() * 2 - 1) * 60;
           ball.vy = Math.sin(ang) * 320 - 90;
-          if (Math.random() < 0.08) sound.play("chirp");
+          lungeT = 0.32; // triggers the lunge thrust in the geometry above
+          lungeDX = Math.cos(ang);
+          lungeDY = Math.sin(ang);
+          if (Math.random() < 0.3) sound.play("chirp");
         }
         if (ball.life <= 0) ball = null;
       }
@@ -292,13 +373,20 @@ export default function CatField({
         treatT = Math.max(0, treatT - dt);
         S.comfort = Math.max(S.comfort, 0.85); // she's happily eating
       }
+      if (petPulse > 0) S.comfort = Math.max(S.comfort, 0.8); // tapped = pet
+      // crouch-then-pounce as she closes on the ball/toy
+      const pounceT = chasing
+        ? Math.max(0, Math.min(1, 1 - dist / (headR * 3)))
+        : 0;
+      S.pounce = ease(S.pounce, pounceT, 8, dt);
       S.startle = ease(S.startle, startleT, 11, dt);
       S.alert = ease(S.alert, alertT, 5, dt);
       S.play = ease(S.play, playT, 6, dt);
       S.pupil = ease(S.pupil, (S.startle > 0.3 ? 1.55 : 1) - S.comfort * 0.45, 8, dt);
       S.ear = ease(
         S.ear,
-        (S.alert * 0.6 + S.play - S.startle * 1.4 + (perking ? 0.8 : 0)) * wake -
+        (S.alert * 0.6 + S.play - S.startle * 1.4 + (perking ? 0.8 : 0) + S.pounce * 0.5) *
+          wake -
           S.asleep -
           S.dizzy * 1.2,
         6,
@@ -364,7 +452,9 @@ export default function CatField({
 
       const vib = S.comfort * Math.sin(time * 38) * headR * 0.02;
       const wob = S.dizzy * Math.sin(time * 9) * headR * 0.1; // dizzy head wobble
-      const drop = S.asleep * headR * 0.45 - stretch * headR * 0.15;
+      const wiggle = S.pounce * Math.sin(time * 22) * headR * 0.03; // pounce wind-up
+      const aSleep = S.asleep; // 0 = sit upright, 1 = curled loaf
+      const drop = aSleep * headR * 0.95 - stretch * headR * 0.15; // tuck onto the loaf
       const hd = hy + drop;
 
       // ---- render ----
@@ -422,10 +512,14 @@ export default function CatField({
         ctx.stroke();
       }
 
-      const bodyCx = baseX + S.leanx * 0.4;
-      const bodyCy = baseY + headR * 1.0 + breathe;
-      const bodyW = headR * (1.0 + S.asleep * 0.35);
-      const bodyH = headR * (1.18 - S.asleep * 0.4 + stretch * 0.2);
+      const bodyCx = baseX + S.leanx * 0.4 * (1 - aSleep);
+      // crossfade sit body -> low wide loaf when sleeping; squash on hop landings
+      const sitW = headR * (1.0 + S.pounce * 0.08);
+      const sitH = headR * (1.18 + stretch * 0.2 - S.pounce * 0.12);
+      const bodyW = (sitW * (1 - aSleep) + headR * 1.55 * aSleep) * (1 + landSquash * 0.1);
+      const bodyH = (sitH * (1 - aSleep) + headR * 0.72 * aSleep) * (1 - landSquash * 0.12);
+      const bodyCy =
+        baseY + headR * 1.0 + breathe + aSleep * headR * 0.4;
 
       // play ball (behind the cat, doesn't rotate with the roll)
       if (ball) {
@@ -452,24 +546,37 @@ export default function CatField({
         ctx.translate(-baseX, -baseY);
       }
 
-      // tail
-      const tailAmp = headR * (0.5 + S.alert * 0.4 + S.play * 0.9);
-      // tail (and legs below) go still when dizzy
-      const still = 1 - S.dizzy;
-      const tailWave =
-        Math.sin(time * (1.5 + S.alert * 1.6 + S.play * 4)) * tailAmp * wake * still;
-      ctx.beginPath();
-      const tsx = bodyCx + bodyW * 0.72;
-      const tsy = bodyCy + bodyH * 0.25;
-      ctx.moveTo(tsx, tsy);
-      ctx.quadraticCurveTo(
-        tsx + headR * 1.1,
-        tsy - headR * 0.2 + tailWave,
-        tsx + headR * 0.6,
-        tsy - headR * 1.4 + tailWave * 0.6,
-      );
-      stroke(0.9);
-      ctx.stroke();
+      // tail - sways upright when sitting; wraps around the front when curled
+      const still = 1 - S.dizzy; // tail/legs freeze when dizzy
+      if (aSleep < 0.6) {
+        const tailAmp = headR * (0.5 + S.alert * 0.4 + S.play * 0.9);
+        const tailWave =
+          Math.sin(time * (1.5 + S.alert * 1.6 + S.play * 4)) * tailAmp * wake * still;
+        const tsx = bodyCx + bodyW * 0.72;
+        const tsy = bodyCy + bodyH * 0.25;
+        ctx.beginPath();
+        ctx.moveTo(tsx, tsy);
+        ctx.quadraticCurveTo(
+          tsx + headR * 1.1,
+          tsy - headR * 0.2 + tailWave,
+          tsx + headR * 0.6,
+          tsy - headR * 1.4 + tailWave * 0.6,
+        );
+        stroke(0.9 * (1 - aSleep));
+        ctx.stroke();
+      }
+      if (aSleep > 0.4) {
+        ctx.beginPath();
+        ctx.moveTo(bodyCx + bodyW * 0.92, bodyCy);
+        ctx.quadraticCurveTo(
+          bodyCx + bodyW * 1.05,
+          bodyCy + bodyH * 0.95,
+          bodyCx - bodyW * 0.25,
+          bodyCy + bodyH * 0.8,
+        );
+        stroke(0.9 * aSleep);
+        ctx.stroke();
+      }
 
       // body
       ctx.beginPath();
@@ -479,22 +586,24 @@ export default function CatField({
       stroke(0.9);
       ctx.stroke();
 
-      // front paws
-      const pawLift = S.play * headR * 0.5 * still;
-      for (const sgn of [-1, 1]) {
-        ctx.beginPath();
-        const pxp = bodyCx + sgn * bodyW * 0.58 + vib;
-        const pyp = bodyCy + bodyH * 0.82 - (sgn === 1 ? pawLift : 0);
-        ctx.ellipse(pxp, pyp, headR * 0.22, headR * 0.16, 0, 0, Math.PI * 2);
-        fill();
-        ctx.fill();
-        stroke(0.85);
-        ctx.stroke();
+      // front paws (tucked away when curled into a loaf)
+      if (aSleep < 0.6) {
+        const pawLift = S.play * headR * 0.5 * still;
+        for (const sgn of [-1, 1]) {
+          ctx.beginPath();
+          const pxp = bodyCx + sgn * bodyW * 0.5 + vib;
+          const pyp = bodyCy + bodyH * 0.82 - (sgn === 1 ? pawLift : 0);
+          ctx.ellipse(pxp, pyp, headR * 0.22, headR * 0.16, 0, 0, Math.PI * 2);
+          fill();
+          ctx.fill();
+          stroke(0.85 * (1 - aSleep));
+          ctx.stroke();
+        }
       }
 
-      // ---- head group (wobbles when dizzy) ----
+      // ---- head group (wobbles when dizzy, wiggles before a pounce) ----
       ctx.save();
-      ctx.translate(wob, 0);
+      ctx.translate(wob + wiggle, 0);
 
       // ears
       const earUp = S.ear;
@@ -681,6 +790,28 @@ export default function CatField({
 
       ctx.restore(); // end barrel-roll transform
 
+      // paw-print trail behind the cursor
+      if (
+        P.inside &&
+        Math.hypot(P.x - lastPrint.x, P.y - lastPrint.y) > headR * 0.85
+      ) {
+        prints.push({ x: P.x, y: P.y, life: 1 });
+        lastPrint = { x: P.x, y: P.y };
+      }
+      for (let i = prints.length - 1; i >= 0; i--) {
+        const pr = prints[i];
+        pr.life -= dt / 1.2;
+        if (pr.life <= 0) {
+          prints.splice(i, 1);
+          continue;
+        }
+        ctx.beginPath();
+        ctx.ellipse(pr.x, pr.y, headR * 0.06, headR * 0.08, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${STROKE},${pr.life * 0.2})`;
+        ctx.shadowBlur = 0;
+        ctx.fill();
+      }
+
       // paw cursor
       if (P.inside) {
         const pr = headR * 0.32;
@@ -723,7 +854,9 @@ export default function CatField({
       window.removeEventListener("scroll", onScroll);
       box.removeEventListener("pointermove", onMove);
       box.removeEventListener("pointerdown", onDown);
+      box.removeEventListener("pointerup", onUp);
       box.removeEventListener("pointerleave", onLeave);
+      box.removeEventListener("pointercancel", onLeave);
     };
   }, []);
 
