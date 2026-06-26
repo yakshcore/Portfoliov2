@@ -380,12 +380,15 @@ export default function BlueprintDiagram({
   detail,
   title,
   onOnline,
+  hideMaximize = false,
 }: {
   nodes: DiagramNode[];
   edges: DiagramEdge[];
   detail?: DiagramData;
   title?: string;
   onOnline?: () => void;
+  // when a reconstruction owns the deep-dive, drop the maximize affordance
+  hideMaximize?: boolean;
 }) {
   const [max, setMax] = useState(false);
   const big = detail ?? { nodes, edges };
@@ -409,25 +412,29 @@ export default function BlueprintDiagram({
     <div className="relative aspect-[5/3] w-full">
       <DiagramScene nodes={nodes} edges={edges} onOnline={onOnline} />
 
-      {/* maximize */}
-      <button
-        onClick={() => {
-          sound.play("blip");
-          setMax(true);
-        }}
-        onMouseEnter={() => sound.play("hover")}
-        aria-label="Maximize diagram"
-        className="absolute right-2 top-2 z-10 flex h-8 items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-cyan hover:text-cyan"
-      >
-        <span className="text-sm leading-none">⤢</span> MAXIMIZE
-      </button>
+      {/* maximize - hidden when a reconstruction owns the deep-dive */}
+      {!hideMaximize && (
+        <>
+          <button
+            onClick={() => {
+              sound.play("blip");
+              setMax(true);
+            }}
+            onMouseEnter={() => sound.play("hover")}
+            aria-label="Maximize diagram"
+            className="absolute right-2 top-2 z-10 flex h-8 items-center gap-1.5 border border-line-faint bg-ink-900/80 px-2.5 font-mono text-[0.6rem] uppercase tracking-wider text-paper-dim backdrop-blur transition-colors hover:border-cyan hover:text-cyan"
+          >
+            <span className="text-sm leading-none">⤢</span> MAXIMIZE
+          </button>
 
-      {detail && (
-        <div className="pointer-events-none absolute bottom-2 left-2">
-          <span className="tech-label text-[0.5rem] text-paper-dim/70">
-            MAXIMIZE FOR FULL BREAKDOWN
-          </span>
-        </div>
+          {detail && (
+            <div className="pointer-events-none absolute bottom-2 left-2">
+              <span className="tech-label text-[0.5rem] text-paper-dim/70">
+                MAXIMIZE FOR FULL BREAKDOWN
+              </span>
+            </div>
+          )}
+        </>
       )}
 
       {/* fullscreen interactive view - portaled to <body> so it escapes any

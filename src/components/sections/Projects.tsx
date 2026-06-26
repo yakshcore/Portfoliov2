@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { projects, type Project } from "@/data/portfolio";
 import BlueprintDiagram from "@/components/BlueprintDiagram";
+import Reconstruction from "@/components/Reconstruction";
 import SectionHeader from "@/components/SectionHeader";
 import { sound } from "@/lib/sound";
 
@@ -22,6 +23,7 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const reverse = i % 2 === 1;
   const [status, setStatus] = useState<Status>("OFFLINE");
+  const [recon, setRecon] = useState(false);
 
   const handleOnline = useCallback(() => {
     setStatus("ONLINE");
@@ -149,8 +151,39 @@ function ProjectBlock({ project, i }: { project: Project; i: number }) {
           detail={project.detail}
           title={`FIG.${i + 1} · ${project.name}`}
           onOnline={handleOnline}
+          hideMaximize={!!project.reconstruction}
         />
+
+        {project.reconstruction && (
+          <button
+            onClick={() => {
+              sound.play("online");
+              setRecon(true);
+            }}
+            onMouseEnter={() => sound.play("hover")}
+            className="group mt-3 flex w-full items-center justify-between border border-line-faint bg-ink-900/60 px-4 py-2.5 font-mono text-[0.65rem] uppercase tracking-wider text-paper-dim transition-colors hover:border-cyan hover:text-cyan"
+          >
+            <span className="flex items-center gap-2">
+              <span className="text-sm leading-none text-cyan">⟲</span>
+              Reconstruct build history
+            </span>
+            <span className="tech-label text-[0.5rem] text-paper-dim/50 transition-colors group-hover:text-cyan">
+              SCRUB THE TIMELINE →
+            </span>
+          </button>
+        )}
       </div>
+
+      {recon && project.reconstruction && (
+        <Reconstruction
+          data={project.reconstruction}
+          title={`FIG.${i + 1} · ${project.name}`}
+          onClose={() => {
+            sound.play("blip");
+            setRecon(false);
+          }}
+        />
+      )}
     </div>
   );
 }

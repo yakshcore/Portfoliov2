@@ -46,6 +46,26 @@ export type DiagramEdge = {
   label?: string;
 };
 
+// A single beat in the "crime-scene reconstruction" of a build. Scrubbing the
+// timeline replays these in order: nodes come online, problems get flagged as
+// STRESS and later RESOLVED, and commit lines stream in.
+export type ReconPhase = {
+  at: string; // timeline label, e.g. "WEEK 1"
+  title: string; // short beat title
+  note: string; // narrative line
+  add: string[]; // node ids that come online this phase
+  commit: string; // commit-style log line
+  stress?: string; // node id flagged under stress this phase
+  stressMsg?: string; // what went wrong
+  resolve?: string; // node id whose stress clears this phase
+  fix?: string; // how it was fixed
+};
+
+export type Reconstruction = {
+  graph: { nodes: DiagramNode[]; edges: DiagramEdge[] };
+  phases: ReconPhase[];
+};
+
 export type Project = {
   id: string;
   index: string; // SYS-01
@@ -60,6 +80,8 @@ export type Project = {
   diagram: { nodes: DiagramNode[]; edges: DiagramEdge[] };
   // expanded breakdown shown in the maximized diagram view
   detail?: { nodes: DiagramNode[]; edges: DiagramEdge[] };
+  // scrubbable build-history reconstruction (forensic deep-dive)
+  reconstruction?: Reconstruction;
 };
 
 export const projects: Project[] = [
@@ -176,6 +198,108 @@ export const projects: Project[] = [
         { from: "docs", to: "mDocs", label: "meta" },
         { from: "pipeline", to: "mCases" },
         { from: "cicd", to: "gateway", label: "deploy" },
+      ],
+    },
+    reconstruction: {
+      graph: {
+        nodes: [
+          { id: "applicant", label: "Client Web", sub: "Next.js", x: 8, y: 24, kind: "client" },
+          { id: "admin", label: "Admin CRM", sub: "Next.js", x: 8, y: 64, kind: "client" },
+          { id: "cdn", label: "CDN", sub: "assets", x: 26, y: 12, kind: "edge" },
+          { id: "otp", label: "OTP Auth", sub: "passwordless", x: 26, y: 46, kind: "service" },
+          { id: "gateway", label: "API Gateway", sub: "Express", x: 44, y: 40, kind: "service" },
+          { id: "caseSvc", label: "Case Service", sub: "applications", x: 64, y: 16, kind: "service" },
+          { id: "pipeline", label: "Status Pipeline", sub: "real-time", x: 64, y: 40, kind: "service" },
+          { id: "notify", label: "Notification", sub: "email / SMS", x: 64, y: 64, kind: "service" },
+          { id: "cicd", label: "CI / CD", sub: "deploy", x: 44, y: 86, kind: "external" },
+          { id: "mCases", label: "Mongo", sub: "cases", x: 88, y: 14, kind: "data" },
+          { id: "mUsers", label: "Mongo", sub: "users", x: 88, y: 38, kind: "data" },
+          { id: "docs", label: "Cloudinary", sub: "documents", x: 88, y: 62, kind: "external" },
+          { id: "mDocs", label: "Mongo", sub: "doc meta", x: 88, y: 86, kind: "data" },
+        ],
+        edges: [
+          { from: "cdn", to: "applicant", label: "assets" },
+          { from: "applicant", to: "gateway", label: "HTTPS" },
+          { from: "admin", to: "gateway" },
+          { from: "applicant", to: "otp", label: "login" },
+          { from: "otp", to: "notify", label: "send OTP" },
+          { from: "otp", to: "gateway", label: "verify" },
+          { from: "gateway", to: "caseSvc" },
+          { from: "gateway", to: "pipeline" },
+          { from: "gateway", to: "notify" },
+          { from: "caseSvc", to: "mCases", label: "CRUD" },
+          { from: "caseSvc", to: "mUsers" },
+          { from: "caseSvc", to: "docs", label: "upload" },
+          { from: "docs", to: "mDocs", label: "meta" },
+          { from: "pipeline", to: "mCases" },
+          { from: "cicd", to: "gateway", label: "deploy" },
+        ],
+      },
+      phases: [
+        {
+          at: "WEEK 1",
+          title: "CASE BACKBONE",
+          note: "The core CRM path: applicant client to an Express gateway to a case service, with applications stored in Mongo.",
+          add: ["applicant", "gateway", "caseSvc", "mCases"],
+          commit: "feat: case service + mongo store",
+        },
+        {
+          at: "WEEK 2",
+          title: "PASSWORDLESS AUTH",
+          note: "OTP login so no passwords are ever stored; users get their own collection.",
+          add: ["otp", "mUsers"],
+          commit: "feat: passwordless otp auth",
+        },
+        {
+          at: "WEEK 3",
+          title: "NOTIFICATIONS",
+          note: "A notification service sends OTP codes and case status updates over email and SMS.",
+          add: ["notify"],
+          commit: "feat: notification service",
+          stress: "otp",
+          stressMsg: "OTP emails took 40s+ on a shared SMTP and ~30% landed in spam, locking applicants out of their own cases.",
+        },
+        {
+          at: "WEEK 4",
+          title: "DELIVERABILITY",
+          note: "Admin CRM for case officers, and OTP + mail moved onto a transactional provider with retries.",
+          add: ["admin"],
+          commit: "fix: transactional email + dkim + retry queue",
+          resolve: "otp",
+          fix: "Transactional email with SPF/DKIM + a retry queue. Delivery under 3s, spam rate near zero.",
+        },
+        {
+          at: "WEEK 6",
+          title: "STATUS PIPELINE",
+          note: "Real-time status pipeline so applicants and officers see case movement the moment it happens.",
+          add: ["pipeline"],
+          commit: "feat: realtime status pipeline",
+        },
+        {
+          at: "WEEK 7",
+          title: "DOCUMENTS",
+          note: "Secure document upload and storage through Cloudinary, with metadata in Mongo.",
+          add: ["docs", "mDocs"],
+          commit: "feat: cloudinary document delivery",
+          stress: "docs",
+          stressMsg: "Uploads streamed through the API: a single 20MB passport scan blocked the event loop and timed out other requests.",
+        },
+        {
+          at: "WEEK 8",
+          title: "DIRECT UPLOADS",
+          note: "Signed direct-to-Cloudinary uploads plus a CDN for applicant assets.",
+          add: ["cdn"],
+          commit: "perf: signed direct uploads + cdn",
+          resolve: "docs",
+          fix: "Signed direct uploads to Cloudinary; the API only stores metadata. No more event-loop stalls.",
+        },
+        {
+          at: "LAUNCH",
+          title: "SHIP IT",
+          note: "Wired CI/CD and deployed end-to-end, cutting manual case-tracking effort ~60%.",
+          add: ["cicd"],
+          commit: "ci: deploy pipeline + production cutover",
+        },
       ],
     },
   },
@@ -315,6 +439,110 @@ export const projects: Project[] = [
         { from: "infra", to: "gateway", label: "host" },
       ],
     },
+    reconstruction: {
+      graph: {
+        nodes: [
+          { id: "web", label: "Web", sub: "Next.js SSR/ISR", x: 8, y: 22, kind: "client" },
+          { id: "android", label: "Android", sub: "Capacitor", x: 8, y: 60, kind: "client" },
+          { id: "nginx", label: "Nginx", sub: "reverse proxy", x: 24, y: 40, kind: "edge" },
+          { id: "gateway", label: "API Gateway", sub: "Node · RBAC", x: 42, y: 40, kind: "service" },
+          { id: "authSvc", label: "Auth", sub: "RBAC", x: 60, y: 12, kind: "service" },
+          { id: "menuSvc", label: "Menu Service", sub: "restaurants", x: 60, y: 34, kind: "service" },
+          { id: "orderSvc", label: "Order Service", sub: "real-time", x: 60, y: 56, kind: "service" },
+          { id: "aiEngine", label: "AI Engine", sub: "rec flows", x: 56, y: 82, kind: "ai" },
+          { id: "gemini", label: "Gemini API", sub: "LLM", x: 78, y: 74, kind: "external" },
+          { id: "claude", label: "Claude API", sub: "LLM", x: 78, y: 94, kind: "external" },
+          { id: "mUsers", label: "Mongo", sub: "users", x: 90, y: 14, kind: "data" },
+          { id: "mMenu", label: "Mongo", sub: "menu", x: 90, y: 36, kind: "data" },
+          { id: "mOrders", label: "Mongo", sub: "orders", x: 90, y: 56, kind: "data" },
+          { id: "s3", label: "AWS S3", sub: "assets", x: 92, y: 78, kind: "external" },
+          { id: "infra", label: "Docker · EC2", sub: "IAM", x: 42, y: 86, kind: "external" },
+        ],
+        edges: [
+          { from: "web", to: "nginx" },
+          { from: "android", to: "nginx" },
+          { from: "nginx", to: "gateway", label: "route" },
+          { from: "gateway", to: "authSvc" },
+          { from: "gateway", to: "menuSvc" },
+          { from: "gateway", to: "orderSvc" },
+          { from: "gateway", to: "aiEngine", label: "infer" },
+          { from: "aiEngine", to: "gemini" },
+          { from: "aiEngine", to: "claude" },
+          { from: "authSvc", to: "mUsers" },
+          { from: "menuSvc", to: "mMenu", label: "CRUD" },
+          { from: "orderSvc", to: "mOrders" },
+          { from: "menuSvc", to: "s3", label: "images" },
+          { from: "aiEngine", to: "mMenu", label: "read" },
+          { from: "infra", to: "gateway", label: "host" },
+        ],
+      },
+      phases: [
+        {
+          at: "WEEK 1",
+          title: "MVP SKELETON",
+          note: "One Next.js client through an Nginx proxy to a single Node gateway. No data layer yet, just proving the request path.",
+          add: ["web", "nginx", "gateway"],
+          commit: "feat: bootstrap next + nginx + node gateway",
+        },
+        {
+          at: "WEEK 2",
+          title: "AUTH + USERS",
+          note: "Pulled RBAC auth into its own service so roles stay isolated; users get a dedicated Mongo store.",
+          add: ["authSvc", "mUsers"],
+          commit: "feat: jwt auth + rbac roles",
+        },
+        {
+          at: "WEEK 4",
+          title: "MENU + MEDIA",
+          note: "Menu service owns 30+ restaurants and 435+ items, images offloaded to S3. But every page shipped fully client-rendered.",
+          add: ["menuSvc", "mMenu", "s3"],
+          commit: "feat: menu service + s3 image pipeline",
+          stress: "web",
+          stressMsg: "Menu pages were fully client-rendered: 4.2s LCP across 435+ items, and almost nothing was crawlable.",
+        },
+        {
+          at: "WEEK 5",
+          title: "SSR / ISR PASS",
+          note: "Real-time order tracking added, and the whole web tier moved to SSR + ISR with cached menu pages.",
+          add: ["orderSvc", "mOrders"],
+          commit: "perf: ssr/isr rendering + realtime orders",
+          resolve: "web",
+          fix: "Moved to SSR + ISR. LCP 4.2s to ~1.4s, ~40% faster and fully crawlable.",
+        },
+        {
+          at: "WEEK 6",
+          title: "AI REC",
+          note: "Recommendation flows via Gemini, called from the gateway and reading the cached menu data.",
+          add: ["aiEngine", "gemini"],
+          commit: "feat: gemini recommendation flow",
+        },
+        {
+          at: "WEEK 7",
+          title: "CLAUDE FALLBACK",
+          note: "Added Claude as a fallback path so a single provider outage never takes recommendations down.",
+          add: ["claude"],
+          commit: "feat: claude fallback + provider routing",
+        },
+        {
+          at: "WEEK 9",
+          title: "MOBILE",
+          note: "Android shipped from the same codebase via Capacitor, hitting the same gateway. The first launch was rough.",
+          add: ["android"],
+          commit: "feat: capacitor android build",
+          stress: "android",
+          stressMsg: "Capacitor cold start hit 3s+ and the webview janked badly on first paint.",
+        },
+        {
+          at: "LAUNCH",
+          title: "SHIP IT",
+          note: "Dockerized on EC2 behind IAM, with lazy webview assets and split bundles, on a pipeline that cut deploys ~30%.",
+          add: ["infra"],
+          commit: "ci: dockerize + ec2 + deploy pipeline",
+          resolve: "android",
+          fix: "Lazy-loaded webview assets + code-splitting. Cold start 3s to ~1.1s.",
+        },
+      ],
+    },
   },
   {
     id: "gamersera",
@@ -434,6 +662,106 @@ export const projects: Project[] = [
         { from: "collections", to: "fbStore" },
         { from: "gateway", to: "rawg", label: "fetch" },
         { from: "gcp", to: "gateway", label: "host" },
+      ],
+    },
+    reconstruction: {
+      graph: {
+        nodes: [
+          { id: "web", label: "Web", sub: "Next.js · TS", x: 8, y: 22, kind: "client" },
+          { id: "android", label: "Android", sub: "Capacitor", x: 8, y: 60, kind: "client" },
+          { id: "gateway", label: "Node API", sub: "gateway", x: 28, y: 40, kind: "service" },
+          { id: "authSvc", label: "Auth", sub: "sessions", x: 48, y: 12, kind: "service" },
+          { id: "social", label: "Social Graph", sub: "follows", x: 48, y: 34, kind: "service" },
+          { id: "collections", label: "Collections", sub: "library", x: 48, y: 56, kind: "service" },
+          { id: "chat", label: "Chat Gateway", sub: "WebSocket", x: 48, y: 82, kind: "service" },
+          { id: "e2e", label: "Encryption", sub: "E2E", x: 68, y: 82, kind: "edge" },
+          { id: "rawg", label: "RAWG API", sub: "game data", x: 28, y: 84, kind: "external" },
+          { id: "gcp", label: "Google Cloud", sub: "host", x: 70, y: 14, kind: "external" },
+          { id: "fbAuth", label: "Firebase", sub: "auth", x: 90, y: 16, kind: "data" },
+          { id: "fbRtdb", label: "Firebase", sub: "RTDB", x: 90, y: 42, kind: "data" },
+          { id: "fbStore", label: "Firestore", sub: "collections", x: 90, y: 68, kind: "data" },
+        ],
+        edges: [
+          { from: "web", to: "gateway" },
+          { from: "android", to: "gateway" },
+          { from: "gateway", to: "authSvc" },
+          { from: "gateway", to: "social" },
+          { from: "gateway", to: "collections" },
+          { from: "gateway", to: "chat", label: "socket" },
+          { from: "chat", to: "e2e" },
+          { from: "e2e", to: "fbRtdb" },
+          { from: "authSvc", to: "fbAuth" },
+          { from: "social", to: "fbStore" },
+          { from: "collections", to: "fbStore" },
+          { from: "gateway", to: "rawg", label: "fetch" },
+          { from: "gcp", to: "gateway", label: "host" },
+        ],
+      },
+      phases: [
+        {
+          at: "WEEK 1",
+          title: "DISCOVERY",
+          note: "Browse games: web client to a Node gateway that pulls the catalog from the RAWG API.",
+          add: ["web", "gateway", "rawg"],
+          commit: "feat: game discovery via rawg",
+        },
+        {
+          at: "WEEK 2",
+          title: "AUTH",
+          note: "User sessions backed by Firebase Auth.",
+          add: ["authSvc", "fbAuth"],
+          commit: "feat: firebase auth sessions",
+        },
+        {
+          at: "WEEK 3",
+          title: "COLLECTIONS",
+          note: "Players build game collections, stored in Firestore.",
+          add: ["collections", "fbStore"],
+          commit: "feat: collections + firestore",
+          stress: "rawg",
+          stressMsg: "Every collection card hit RAWG live: discovery blew past the API rate limit and pages started returning 429s under load.",
+        },
+        {
+          at: "WEEK 4",
+          title: "CACHE + SOCIAL",
+          note: "Cached the RAWG catalog and added the follow graph.",
+          add: ["social"],
+          commit: "perf: cache rawg catalog + social graph",
+          resolve: "rawg",
+          fix: "Cached the catalog in Firestore with periodic refresh. RAWG calls dropped ~95% and the 429s stopped.",
+        },
+        {
+          at: "WEEK 6",
+          title: "CHAT",
+          note: "Real-time chat gateway over WebSockets.",
+          add: ["chat"],
+          commit: "feat: websocket chat gateway",
+          stress: "chat",
+          stressMsg: "The first chat build relayed and stored messages in plaintext: anyone with DB access could read every conversation.",
+        },
+        {
+          at: "WEEK 8",
+          title: "END-TO-END",
+          note: "Locked chat down with client-side end-to-end encryption, relayed through Firebase RTDB.",
+          add: ["e2e", "fbRtdb"],
+          commit: "feat: e2e encrypted chat",
+          resolve: "chat",
+          fix: "Client-side end-to-end encryption: the server and database only ever see ciphertext.",
+        },
+        {
+          at: "WEEK 9",
+          title: "MOBILE",
+          note: "Android shipped from the same codebase via Capacitor.",
+          add: ["android"],
+          commit: "feat: capacitor android build",
+        },
+        {
+          at: "LAUNCH",
+          title: "CLOUD",
+          note: "Deployed on Google Cloud, built for community scale.",
+          add: ["gcp"],
+          commit: "ci: google cloud deploy",
+        },
       ],
     },
   },
