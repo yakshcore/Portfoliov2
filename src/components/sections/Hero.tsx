@@ -22,11 +22,15 @@ export default function Hero({ started }: { started: boolean }) {
   const textCol = useRef<HTMLDivElement>(null);
   const [storyOpen, setStoryOpen] = useState(false);
 
-  // the hero globe is always fully active. activeRef is an animated power level:
-  // it powers DOWN (all layers off, one by one) when the story opens, and powers
-  // back UP to full when it closes. No persistence - it's purely presentational.
-  const activeRef = useRef(STACK_MAX);
-  const power = useRef({ v: STACK_MAX });
+  // activeRef is an animated power level for the globe. It starts OFF (dark) and
+  // energizes layer-by-layer the moment the boot sequence hands off - the globe's
+  // "coming online". It powers DOWN again when the story opens and back UP on
+  // close. No persistence - purely presentational.
+  const activeRef = useRef(-1.2);
+  const power = useRef({ v: -1.2 });
+  const writePower = () => {
+    activeRef.current = power.current.v;
+  };
 
   useEffect(() => {
     if (!started) return;
@@ -42,6 +46,14 @@ export default function Hero({ started }: { started: boolean }) {
         { opacity: 0, scale: 0.9, duration: 1.2, ease: "power2.out" },
         0.2,
       );
+      // globe wakes up: energize from dark to full, one layer at a time
+      gsap.to(power.current, {
+        v: STACK_MAX,
+        duration: 1.6,
+        ease: "power2.out",
+        delay: 0.35,
+        onUpdate: writePower,
+      });
     }, root);
     return () => ctx.revert();
   }, [started]);
@@ -56,9 +68,6 @@ export default function Hero({ started }: { started: boolean }) {
       return;
     }
     const tc = textCol.current;
-    const setActive = () => {
-      activeRef.current = power.current.v;
-    };
     if (storyOpen) {
       gsap.to(tc, {
         opacity: 0,
@@ -72,7 +81,7 @@ export default function Hero({ started }: { started: boolean }) {
         duration: 0.75,
         ease: "power2.inOut",
         overwrite: "auto",
-        onUpdate: setActive,
+        onUpdate: writePower,
       });
     } else {
       gsap.to(tc, {
@@ -89,7 +98,7 @@ export default function Hero({ started }: { started: boolean }) {
         duration: 1.0,
         ease: "power2.out",
         overwrite: "auto",
-        onUpdate: setActive,
+        onUpdate: writePower,
       });
     }
   }, [storyOpen]);

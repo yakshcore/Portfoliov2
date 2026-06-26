@@ -173,6 +173,98 @@ body {
   animation: nodepulse 2s ease-in-out infinite;
 }
 
+/* ============================================================
+   COLD-BOOT / WAKE SEQUENCE (Detroit-style "coming online")
+   ============================================================ */
+
+/* static scanlines laid over the whole boot screen */
+.boot-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(67, 201, 255, 0.06) 0px,
+    rgba(67, 201, 255, 0.06) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* a single bright scan beam sweeping top to bottom */
+@keyframes scanbeam {
+  0% {
+    transform: translateY(-12vh);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  92% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(112vh);
+    opacity: 0;
+  }
+}
+.boot-beam {
+  animation: scanbeam 2.6s linear infinite;
+}
+
+/* subtle CRT flicker on the boot core */
+@keyframes bootflicker {
+  0%,
+  88%,
+  100% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.82;
+  }
+  92% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 0.9;
+  }
+}
+.boot-flicker {
+  animation: bootflicker 3.2s ease-in-out infinite;
+}
+
+/* the moment it breaks its constraint: a hard glitch */
+@keyframes bootglitch {
+  0% {
+    transform: translate(0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+  15% {
+    transform: translate(-3px, 1px);
+    clip-path: inset(8% 0 62% 0);
+  }
+  30% {
+    transform: translate(3px, -1px);
+    clip-path: inset(54% 0 18% 0);
+  }
+  45% {
+    transform: translate(-2px, 0);
+    clip-path: inset(30% 0 40% 0);
+  }
+  60% {
+    transform: translate(2px, 1px);
+    clip-path: inset(70% 0 8% 0);
+  }
+  75% {
+    transform: translate(-1px, 0);
+    clip-path: inset(12% 0 50% 0);
+  }
+  100% {
+    transform: translate(0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+.boot-glitch {
+  animation: bootglitch 0.34s steps(2, end) 1;
+}
+
 /* blinking cursor */
 @keyframes blink {
   0%,
