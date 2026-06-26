@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { identity } from "@/data/portfolio";
 import SectionHeader from "@/components/SectionHeader";
 import CatField, { type CatMood } from "@/components/CatField";
+import MissionDebrief from "@/components/MissionDebrief";
 import { sendCat, type CatAct } from "@/lib/catSignals";
 import { sound } from "@/lib/sound";
 
@@ -230,6 +231,9 @@ export default function Contact() {
           </div>
         </div>
       </div>
+
+      {/* mission debrief - the closing beat */}
+      <MissionDebrief />
 
       {/* footer */}
       <div className="mt-24 flex flex-wrap items-center justify-between gap-4 border-t border-line-faint pt-6 tech-label">
